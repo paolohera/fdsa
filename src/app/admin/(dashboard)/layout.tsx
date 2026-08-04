@@ -20,10 +20,11 @@ export default async function AdminLayout({
   // but the login page itself renders through this same route group without
   // a user, so bail out quietly rather than double-guarding there.
   if (!user) {
+    console.log("DEBUG admin check: no user found on request");
     return <>{children}</>;
   }
 
-  const { data: profile } = await supabase
+const { data: profile } = await supabase
     .from("profiles")
     .select("role, email")
     .eq("id", user.id)

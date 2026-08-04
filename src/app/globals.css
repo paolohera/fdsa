@@ -1,26 +1,33 @@
 @import "tailwindcss";
 
+/*
+  Design tokens — collegiate/print-heritage direction.
+  Ink navy + parchment + brass, serif display paired with a plain sans body.
+  System font stacks only (no webfont fetch dependency).
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-ink: #16233f;
+  --color-parchment: #f6f1e7;
+  --color-paper: #ffffff;
+  --color-brass: #a97c3d;
+  --color-charcoal: #2b2b28;
+
+  --font-display: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-ink: var(--color-ink);
+  --color-parchment: var(--color-parchment);
+  --color-paper: var(--color-paper);
+  --color-brass: var(--color-brass);
+  --color-charcoal: var(--color-charcoal);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-body);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-parchment);
+  color: var(--color-charcoal);
+  font-family: var(--font-body);
 }
