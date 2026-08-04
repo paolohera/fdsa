@@ -22,25 +22,32 @@ export default async function HomePage() {
             className="text-xs font-semibold uppercase tracking-[0.3em] text-brass"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Admissions open for Fall 2027
+            CHED · TESDA · CAAP Recognized
           </p>
           <h2
             className="mt-4 text-4xl leading-tight text-ink sm:text-5xl"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            A century-old tradition of independent thought.
+            A national leader in dependable, quality aviation education.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-charcoal/80">
-            Ashford brings together six schools, forty research centers, and a
-            student body of twelve thousand drawn from every corner of the
-            state — and beyond.
+            Since 1988, FDSA has trained aviation and aerospace professionals
+            at Mactan-Cebu International Airport — combining flight and
+            ground training with technical and degree programs recognized
+            across the Philippine aviation industry.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link
-              href="/news"
+              href="/programs"
               className="rounded-none border border-ink bg-ink px-6 py-3 text-sm font-medium text-parchment transition hover:bg-transparent hover:text-ink"
             >
-              Read the latest
+              Explore programs
+            </Link>
+            <Link
+              href="/about"
+              className="rounded-none border border-ink px-6 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment"
+            >
+              About FDSA
             </Link>
           </div>
         </div>
@@ -91,6 +98,71 @@ export default async function HomePage() {
               </p>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* Find us */}
+      <section className="border-t border-ink/10 bg-paper">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <div className="flex items-baseline justify-between border-b border-ink/20 pb-3">
+            <h3
+              className="text-2xl text-ink"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Find Us
+            </h3>
+           <a href="https://www.google.com/maps/dir/?api=1&destination=10.2903054,123.9651446" 
+           target="_blank" rel="noopener noreferrer" className="text-sm text-brass hover:underline">Get directions &rarr;</a>
+          </div>
+
+          <div className="mt-6 grid gap-8 sm:grid-cols-5">
+            <div className="overflow-hidden border border-ink/15 sm:col-span-3">
+              <iframe
+                title="FDSA campus location"
+                src="https://www.google.com/maps?q=10.2903054,123.9651446&hl=en&z=16&t=h&output=embed"
+                width="100%"
+                height="360"
+                style={{ border: 0, display: "block" }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <p
+                className="text-xs font-semibold uppercase tracking-wide text-brass"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Campus Address
+              </p>
+              <p className="mt-1 text-sm leading-6 text-charcoal/80">
+                The Runway Building, Pak-Pakan Rd
+                <br />
+                Lapu-Lapu City, Cebu, Philippines
+              </p>
+
+              <p
+                className="mt-6 text-xs font-semibold uppercase tracking-wide text-brass"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Phone
+              </p>
+              <p className="mt-1 text-sm text-charcoal/80">+63 32 607 92</p>
+
+              <p
+                className="mt-6 text-xs font-semibold uppercase tracking-wide text-brass"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Office Hours
+              </p>
+              <p className="mt-1 text-sm leading-6 text-charcoal/80">
+                Monday &ndash; Friday, 8:00 AM &ndash; 5:00 PM
+                <br />
+                Closed Saturday &amp; Sunday
+              </p>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=10.2903054,123.9651446" target="_blank" rel="noopener noreferrer" className="mt-6 inline-block border border-ink px-5 py-2.5 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment">Get directions</a>
+            </div>
+          </div>
         </div>
       </section>
     </div>
