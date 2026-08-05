@@ -42,12 +42,15 @@ const { data: profile } = await supabase
             <span className="text-sm font-semibold text-slate-900">
               University CMS
             </span>
-            <nav className="flex gap-4 text-sm text-slate-500">
+           <nav className="flex gap-4 text-sm text-slate-500">
               <Link href="/admin" className="hover:text-slate-900">
                 Dashboard
               </Link>
               <Link href="/admin/news" className="hover:text-slate-900">
                 News
+              </Link>
+              <Link href="/admin/hero" className="hover:text-slate-900">
+                Hero Carousel
               </Link>
             </nav>
           </div>

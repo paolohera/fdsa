@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import HeroCarousel from "@/components/hero-carousel";
 
 export const revalidate = 60; // re-check for new published posts every 60s
 
@@ -13,45 +14,17 @@ export default async function HomePage() {
     .order("created_at", { ascending: false })
     .limit(3);
 
+  const { data: heroImages } = await supabase
+    .from("hero_images")
+    .select("id, image_url")
+    .order("position", { ascending: true });
+
   return (
     <div>
-      {/* Hero */}
-      <section className="border-b border-ink/10 bg-paper">
-        <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-          <p
-            className="text-xs font-semibold uppercase tracking-[0.3em] text-brass"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            CHED · TESDA · CAAP Recognized
-          </p>
-          <h2
-            className="mt-4 text-4xl leading-tight text-ink sm:text-5xl"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            A national leader in dependable, quality aviation education.
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-charcoal/80">
-            Since 1988, FDSA has trained aviation and aerospace professionals
-            at Mactan-Cebu International Airport — combining flight and
-            ground training with technical and degree programs recognized
-            across the Philippine aviation industry.
-          </p>
-          <div className="mt-8 flex justify-center gap-4">
-            <Link
-              href="/programs"
-              className="rounded-none border border-ink bg-ink px-6 py-3 text-sm font-medium text-parchment transition hover:bg-transparent hover:text-ink"
-            >
-              Explore programs
-            </Link>
-            <Link
-              href="/about"
-              className="rounded-none border border-ink px-6 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment"
-            >
-              About FDSA
-            </Link>
-          </div>
-        </div>
-      </section>
+     {/* Hero carousel */}
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        <HeroCarousel images={heroImages ?? []} />
+      </div>
 
       {/* Latest news */}
       <section className="mx-auto max-w-5xl px-6 py-16">
@@ -119,12 +92,14 @@ export default async function HomePage() {
             <div className="overflow-hidden border border-ink/15 sm:col-span-3">
               <iframe
                 title="FDSA campus location"
-                src="https://www.google.com/maps?q=10.2903054,123.9651446&hl=en&z=16&t=h&output=embed"
+                src="https://www.google.com/maps/embed?pb=!4v1785888596261!6m8!1m7!1sbQ3j0vlAK09sSCKzu0dtXw!2m2!1d10.29024304800096!2d123.965358500781!3f299.6511160914959!4f-1.0900429119214152!5f0.7820865974627469"
                 width="100%"
                 height="360"
                 style={{ border: 0, display: "block" }}
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; gyroscope; magnetometer"
+                allowFullScreen
               />
             </div>
 

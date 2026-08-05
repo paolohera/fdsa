@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
@@ -5,8 +6,18 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
     <div className="flex min-h-screen flex-col">
       <header className="border-b-4 border-double border-ink bg-parchment">
         <div className="mx-auto max-w-5xl px-6 py-8 text-center">
+          <Link href="/" className="inline-block">
+            <Image
+              src="/fdsa-logo.png"
+              alt="FDSA crest"
+              width={88}
+              height={88}
+              className="mx-auto"
+              priority
+            />
+          </Link>
           <p
-            className="text-xs font-semibold uppercase tracking-[0.3em] text-brass"
+            className="mt-3 text-xs font-semibold uppercase tracking-[0.3em] text-brass"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Est. 1988 · Mactan-Cebu International Airport Area
@@ -16,26 +27,26 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
               className="mt-2 text-3xl font-bold tracking-tight text-ink sm:text-4xl"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Flight Dynamics School of Aeronautics
+              Flight Dynamics School of Aeronautics Inc.
             </h1>
           </Link>
         </div>
         <nav className="border-t border-ink/20">
           <div className="mx-auto flex max-w-5xl items-center justify-center gap-8 px-6 py-3 text-sm">
             <Link href="/" className="text-charcoal hover:text-brass">
-              Home
+              HOME
             </Link>
             <Link href="/about" className="text-charcoal hover:text-brass">
-              About
+              ABOUT
             </Link>
             <Link href="/programs" className="text-charcoal hover:text-brass">
-              Programs
+              PROGRAMS
             </Link>
             <Link href="/news" className="text-charcoal hover:text-brass">
-              News
+              NEWS
             </Link>
             <Link href="/admin/login" className="text-charcoal/50 hover:text-brass">
-              Staff
+              STAFF
             </Link>
           </div>
         </nav>
@@ -45,7 +56,14 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
 
       <footer className="border-t border-ink/20 bg-ink text-parchment/70">
         <div className="mx-auto max-w-5xl px-6 py-10 text-center text-sm">
-          <p style={{ fontFamily: "var(--font-display)" }} className="text-parchment">
+          <Image
+            src="/fdsa-logo.png"
+            alt="FDSA crest"
+            width={44}
+            height={44}
+            className="mx-auto opacity-90"
+          />
+          <p style={{ fontFamily: "var(--font-display)" }} className="mt-3 text-parchment">
             Flight Dynamics School of Aeronautics, Inc.
           </p>
           <p className="mt-2">

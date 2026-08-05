@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "University Site",
-  description: "University website — admin CMS foundation",
+  title: "Flight Dynamics School of Aeronautics, Inc.",
+  description: "Flight Dynamics School of Aeronautics, Inc. - Mactan-Cebu International Airport Area",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
