@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import HeroCarousel from "@/components/hero-carousel";
 
@@ -19,12 +20,71 @@ export default async function HomePage() {
     .select("id, image_url")
     .order("position", { ascending: true });
 
+  const { data: aboutImage } = await supabase
+    .from("about_image")
+    .select("image_url")
+    .maybeSingle();
+
   return (
     <div>
-     {/* Hero carousel */}
+      {/* Hero carousel */}
       <div className="mx-auto max-w-5xl px-6 py-8">
         <HeroCarousel images={heroImages ?? []} />
       </div>
+
+      {/* About preview */}
+      <section className="border-y border-ink/10 bg-paper">
+        <div className="mx-auto grid max-w-5xl gap-10 px-6 py-16 sm:grid-cols-2 sm:items-center">
+          {aboutImage ? (
+            <div className="relative aspect-[4/3] w-full overflow-hidden">
+              <Image
+                src={aboutImage.image_url}
+                alt="FDSA students"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 border border-dashed border-ink/25 bg-ink/5 text-center">
+              <span className="text-xs uppercase tracking-widest text-charcoal/40">
+                Student photo placeholder
+              </span>
+              <span className="text-[11px] text-charcoal/30">
+                Add one from /admin/about
+              </span>
+            </div>
+          )}
+
+          <div>
+            <p
+              className="text-xs font-semibold uppercase tracking-[0.3em] text-brass"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              About FDSA
+            </p>
+            <h3
+              className="mt-2 text-3xl text-ink"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Training aviation professionals since 1988.
+            </h3>
+            <p className="mt-4 text-sm leading-7 text-charcoal/80">
+              From a single hangar in Manila to a full campus at Mactan-Cebu
+              International Airport, FDSA has spent over three decades
+              preparing students for careers in aircraft maintenance,
+              avionics, and aviation business — guided by faith, duty,
+              service, and accountability.
+            </p>
+            <Link
+              href="/about"
+              className="mt-6 inline-block border border-ink px-6 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment"
+            >
+              More About Us
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Latest news */}
       <section className="mx-auto max-w-5xl px-6 py-16">
@@ -84,8 +144,8 @@ export default async function HomePage() {
             >
               Find Us
             </h3>
-           <a href="https://www.google.com/maps/dir/?api=1&destination=10.2903054,123.9651446" 
-           target="_blank" rel="noopener noreferrer" className="text-sm text-brass hover:underline">Get directions &rarr;</a>
+            
+             <a href="https://www.google.com/maps/dir/?api=1&destination=10.2903054,123.9651446" target="_blank" rel="noopener noreferrer" className="text-sm text-brass hover:underline">Get directions &rarr;</a>
           </div>
 
           <div className="mt-6 grid gap-8 sm:grid-cols-5">
@@ -135,7 +195,8 @@ export default async function HomePage() {
                 <br />
                 Closed Saturday &amp; Sunday
               </p>
-              <a href="https://www.google.com/maps/dir/?api=1&destination=10.2903054,123.9651446" target="_blank" rel="noopener noreferrer" className="mt-6 inline-block border border-ink px-5 py-2.5 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment">Get directions</a>
+
+              <a href="https://www.google.com/maps/dir/?api=1&destination=10.2903054,123.9651446" target="_blank" rel="noopener noreferrer" className="text-sm text-brass hover:underline">Get directions &rarr;</a>
             </div>
           </div>
         </div>

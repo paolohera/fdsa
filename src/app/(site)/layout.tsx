@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import SecretLoginModal from "@/components/secret-login-modal";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
+      <SecretLoginModal />
       <header className="border-b-4 border-double border-ink bg-parchment">
         <div className="mx-auto max-w-5xl px-6 py-8 text-center">
           <Link href="/" className="inline-block">
@@ -44,9 +46,6 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <Link href="/news" className="text-charcoal hover:text-brass">
               NEWS
-            </Link>
-            <Link href="/admin/login" className="text-charcoal/50 hover:text-brass">
-              STAFF
             </Link>
           </div>
         </nav>

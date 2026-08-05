@@ -52,6 +52,10 @@ const { data: profile } = await supabase
               <Link href="/admin/hero" className="hover:text-slate-900">
                 Hero Carousel
               </Link>
+              <Link href="/admin/about" className="hover:text-slate-900">
+                About Image
+              </Link>
+           
             </nav>
           </div>
           <div className="flex items-center gap-3 text-sm text-slate-500">
