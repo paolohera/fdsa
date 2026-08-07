@@ -1,18 +1,35 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
-type HeroCarouselProps = {
-  images: { id: string; image_url: string }[];
+type HeroStat = {
+  id: string;
+  value: string;
+  label: string;
 };
 
-const SLIDE_INTERVAL_MS = 5000;
+type HeroSlide = {
+  id: string;
+  image_url: string;
+  title: string;
+  description: string;
+  cta_label: string;
+  cta_url: string;
+  stats: HeroStat[];
+};
 
-export default function HeroCarousel({ images }: HeroCarouselProps) {
+type HeroCarouselProps = {
+  slides: HeroSlide[];
+};
+
+const SLIDE_INTERVAL_MS = 3000;
+
+export default function HeroCarousel({ slides }: HeroCarouselProps) {
   const [index, setIndex] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const count = images.length;
+  const count = slides.length;
 
   function goTo(next: number) {
     if (count === 0) return;
@@ -47,28 +64,81 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
 
   if (count === 0) {
     return (
-      <div className="flex h-[420px] w-full items-center justify-center bg-ink/5">
+      <div className="flex h-[70vh] w-full items-center justify-center bg-ink/5">
         <p className="text-sm text-charcoal/50">
-          No slides yet — add images from the admin panel.
+          No slides yet — add one from the admin panel.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="relative h-[420px] w-full overflow-hidden bg-ink">
+    <div className="relative w-full overflow-x-hidden">
+      {/* Background image — update the path below to match your actual file */}
       <div
-        className="flex h-full transition-transform duration-700 ease-in-out"
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/bg.png')" }}
+      />
+      {/* Parchment tint so text/stats stay readable over any photo */}
+      <div className="absolute inset-0 bg-parchment/70" />
+
+      <div
+        className="relative flex transition-transform duration-700 ease-in-out"
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
-        {images.map((image) => (
-          <div key={image.id} className="h-full w-full shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={image.image_url}
-              alt=""
-              className="h-full w-full object-cover"
-            />
+        {slides.map((slide) => (
+          <div key={slide.id} className="w-full shrink-0 px-2 py-10 sm:px-8">
+            <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-8 sm:grid-cols-[1fr_auto_1fr]">
+              {/* Left: program info */}
+              <div className="order-2 text-center sm:order-1 sm:text-left">
+                <h2
+                  className="text-2xl leading-tight text-ink sm:text-3xl"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  {slide.title}
+                </h2>
+                {slide.description && (
+                  <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-charcoal/70 sm:mx-0">
+                    {slide.description}
+                  </p>
+                )}
+                <Link
+                  href={slide.cta_url}
+                  className="mt-5 inline-block bg-ink px-6 py-3 text-sm font-medium text-parchment transition hover:bg-brass"
+                >
+                  {slide.cta_label}
+                </Link>
+              </div>
+
+              {/* Center: student image, U-shaped crop */}
+              <div className="order-1 flex justify-center sm:order-2">
+                <div className="h-64 w-48 overflow-hidden rounded-t-none rounded-b-[999px] border-4 border-paper shadow-lg sm:h-80 sm:w-60">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={slide.image_url}
+                    alt={slide.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Right: stats */}
+              <div className="order-3 flex justify-center gap-6 text-center sm:justify-end sm:gap-8 sm:text-right">
+                {slide.stats.map((stat) => (
+                  <div key={stat.id}>
+                    <p
+                      className="text-2xl text-ink sm:text-3xl"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      {stat.value}
+                    </p>
+                    <p className="mt-1 max-w-[8rem] text-xs leading-4 text-charcoal/60">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -79,7 +149,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
             type="button"
             onClick={handlePrev}
             aria-label="Previous slide"
-            className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-paper/80 text-ink transition hover:bg-paper"
+            className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-paper/90 text-ink shadow transition hover:bg-paper sm:left-4"
           >
             &larr;
           </button>
@@ -87,15 +157,15 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
             type="button"
             onClick={handleNext}
             aria-label="Next slide"
-            className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-paper/80 text-ink transition hover:bg-paper"
+            className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-paper/90 text-ink shadow transition hover:bg-paper sm:right-4"
           >
             &rarr;
           </button>
 
-          <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-            {images.map((image, i) => (
+          <div className="mt-2 flex justify-center gap-2 pb-4">
+            {slides.map((slide, i) => (
               <button
-                key={image.id}
+                key={slide.id}
                 type="button"
                 aria-label={`Go to slide ${i + 1}`}
                 onClick={() => {
@@ -103,7 +173,7 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
                   restartTimer();
                 }}
                 className={`h-2 w-2 rounded-full transition ${
-                  i === index ? "bg-paper" : "bg-paper/40"
+                  i === index ? "bg-brass" : "bg-ink/20"
                 }`}
               />
             ))}

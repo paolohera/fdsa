@@ -1,12 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import SecretLoginModal from "@/components/secret-login-modal";
+import SmoothScrollProvider from "@/components/smooth-scroll-provider";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <SecretLoginModal />
-      <header className="border-b-4 border-double border-ink bg-parchment">
+    <SmoothScrollProvider>
+      <div className="flex min-h-screen flex-col">
+        <SecretLoginModal />
+        <header className="border-b-4 border-double border-ink bg-parchment">
         <div className="mx-auto max-w-5xl px-6 py-8 text-center">
           <Link href="/" className="inline-block">
             <Image
@@ -29,23 +31,23 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
               className="mt-2 text-3xl font-bold tracking-tight text-ink sm:text-4xl"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              Flight Dynamics School of Aeronautics Inc.
+              Flight Dynamics School of Aeronautics
             </h1>
           </Link>
         </div>
         <nav className="border-t border-ink/20">
           <div className="mx-auto flex max-w-5xl items-center justify-center gap-8 px-6 py-3 text-sm">
             <Link href="/" className="text-charcoal hover:text-brass">
-              HOME
+              Home
             </Link>
             <Link href="/about" className="text-charcoal hover:text-brass">
-              ABOUT
+              About
             </Link>
             <Link href="/programs" className="text-charcoal hover:text-brass">
-              PROGRAMS
+              Programs
             </Link>
             <Link href="/news" className="text-charcoal hover:text-brass">
-              NEWS
+              News
             </Link>
           </div>
         </nav>
@@ -74,6 +76,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           <p className="mt-1">&copy; {new Date().getFullYear()} Flight Dynamics School of Aeronautics, Inc.</p>
         </div>
       </footer>
-    </div>
+      </div>
+    </SmoothScrollProvider>
   );
 }

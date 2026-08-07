@@ -1,34 +1,44 @@
+import StoryChapter from "@/components/story-chapter";
+
 const timeline = [
   {
     year: "1988",
+    title: "A Hangar in Manila",
     text: "Engr. Juanito M. dela Cruz founded Link Flight Aviation School at the AIRSPAN Hangar, Manila Domestic Airport, Pasay City.",
   },
   {
     year: "1989",
+    title: "Wings Expand",
     text: "Nobuyoshi Hisada joined as a business partner, expanding flight training equipment and introducing helicopter training alongside fixed-wing operations.",
   },
   {
     year: "1991",
+    title: "Chasing Clear Skies",
     text: "A branch opened in Lahug, Cebu City, drawn by favorable weather — later relocating after Lahug Airport's closure.",
   },
   {
     year: "1993",
+    title: "A New Home at Mactan",
     text: "Operations moved to Mactan-Cebu International Airport (MCIAA), Pajac, Lapu-Lapu City. Manila operations merged in, and the school was renamed Flight Dynamics School of Aviation.",
   },
   {
     year: "1995",
+    title: "Made Official",
     text: "Incorporated as Flight Dynamics School of Aeronautics, Inc. on September 12, under SEC Reg. No. CN095-000253.",
   },
   {
     year: "2004",
+    title: "Room to Grow",
     text: "Relocated to a new campus at Corner Basak-Iba, improving accessibility for students, faculty, and staff.",
   },
   {
     year: "2006–2009",
+    title: "Recognized Beyond Borders",
     text: "Accredited by the Bureau of Immigration and Deportation (2006) and the Department of Foreign Affairs (2009).",
   },
   {
     year: "Today",
+    title: "A Legacy Airborne",
     text: "FDSA offers Flight and Ground Training, Technical, and Degree programs approved by CHED and TESDA, with continuing recognition from CAAP.",
   },
 ];
@@ -77,23 +87,16 @@ export default function AboutPage() {
       </section>
 
       {/* History timeline */}
-      <section className="mx-auto max-w-3xl px-6 py-16">
-        <div className="space-y-8 border-l-2 border-ink/15 pl-6">
-          {timeline.map((item) => (
-            <div key={item.year} className="relative">
-              <span className="absolute -left-[31px] top-1 h-2.5 w-2.5 rounded-full bg-brass" />
-              <p
-                className="text-sm font-semibold text-brass"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                {item.year}
-              </p>
-              <p className="mt-1 text-sm leading-6 text-charcoal/80">
-                {item.text}
-              </p>
-            </div>
-          ))}
-        </div>
+      <section className="mx-auto max-w-5xl space-y-24 px-6 py-20 sm:space-y-32">
+        {timeline.map((item, index) => (
+          <StoryChapter
+            key={item.year}
+            year={item.year}
+            title={item.title}
+            text={item.text}
+            index={index}
+          />
+        ))}
       </section>
 
       {/* Vision & Mission */}
