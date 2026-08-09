@@ -43,8 +43,20 @@ body {
   }
 }
 
-/* Required structural CSS for GSAP ScrollSmoother */
-#smooth-wrapper {
+/* Required structural CSS for GSAP ScrollSmoother.
+   Scoped to .gsap-smooth-active (toggled by SmoothScrollProvider, only on
+   non-touch-only devices — see that file for why). Without the class,
+   #smooth-wrapper is a normal static block and the page scrolls natively:
+   this matters for /admin (never wrapped in ScrollSmoother) AND for
+   touch-only devices on the public site (smooth scroll intentionally
+   disabled there — see smooth-scroll-provider.tsx). */
+html.gsap-smooth-active,
+body.gsap-smooth-active {
+  height: 100%;
+  overflow: hidden;
+}
+
+html.gsap-smooth-active #smooth-wrapper {
   overflow: hidden;
   position: fixed;
   height: 100%;

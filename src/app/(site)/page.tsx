@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import HeroCarousel from "@/components/hero-carousel";
 import ScrollReveal from "@/components/scroll-reveal";
 import ScrollStagger from "@/components/scroll-stagger";
+import NewsCard from "@/components/news-card";
 
 export const revalidate = 60; // re-check for new published posts every 60s
 
@@ -11,7 +12,7 @@ export default async function HomePage() {
 
   const { data: posts } = await supabase
     .from("news_posts")
-    .select("id, title, slug, body, created_at")
+    .select("id, title, slug, body, created_at, image_url")
     .eq("published", true)
     .order("created_at", { ascending: false })
     .limit(3);
@@ -127,30 +128,16 @@ export default async function HomePage() {
           </p>
         )}
 
-        <ScrollStagger className="mt-2 divide-y divide-ink/10">
+        <ScrollStagger className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts?.map((post) => (
-            <Link
+            <NewsCard
               key={post.id}
-              href={`/news/${post.slug}`}
-              className="block py-6 transition hover:bg-paper"
-            >
-              <p className="text-xs uppercase tracking-wide text-brass">
-                {new Date(post.created_at).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
-              <h4
-                className="mt-1 text-xl text-ink"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                {post.title}
-              </h4>
-              <p className="mt-2 line-clamp-2 text-sm text-charcoal/70">
-                {post.body}
-              </p>
-            </Link>
+              slug={post.slug}
+              title={post.title}
+              body={post.body}
+              createdAt={post.created_at}
+              imageUrl={post.image_url}
+            />
           ))}
         </ScrollStagger>
       </section>

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import NewsCard from "@/components/news-card";
 
 export const revalidate = 60;
 
@@ -8,7 +8,7 @@ export default async function NewsListPage() {
 
   const { data: posts } = await supabase
     .from("news_posts")
-    .select("id, title, slug, body, created_at")
+    .select("id, title, slug, body, created_at, image_url")
     .eq("published", true)
     .order("created_at", { ascending: false });
 
@@ -33,30 +33,16 @@ export default async function NewsListPage() {
         </p>
       )}
 
-      <div className="mt-8 divide-y divide-ink/10 border-t border-ink/20">
+      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {posts?.map((post) => (
-          <Link
+          <NewsCard
             key={post.id}
-            href={`/news/${post.slug}`}
-            className="block py-6 transition hover:bg-paper"
-          >
-            <p className="text-xs uppercase tracking-wide text-brass">
-              {new Date(post.created_at).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
-            <h3
-              className="mt-1 text-xl text-ink"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {post.title}
-            </h3>
-            <p className="mt-2 line-clamp-2 text-sm text-charcoal/70">
-              {post.body}
-            </p>
-          </Link>
+            slug={post.slug}
+            title={post.title}
+            body={post.body}
+            createdAt={post.created_at}
+            imageUrl={post.image_url}
+          />
         ))}
       </div>
     </div>

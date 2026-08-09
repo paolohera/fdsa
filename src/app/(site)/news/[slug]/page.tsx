@@ -1,4 +1,4 @@
-    import Link from "next/link";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,7 +14,7 @@ export default async function NewsDetailPage({
 
   const { data: post } = await supabase
     .from("news_posts")
-    .select("title, body, created_at")
+    .select("title, body, created_at, image_url")
     .eq("slug", slug)
     .eq("published", true)
     .single();
@@ -22,27 +22,40 @@ export default async function NewsDetailPage({
   if (!post) notFound();
 
   return (
-    <article className="mx-auto max-w-2xl px-6 py-16">
-      <Link href="/news" className="text-sm text-brass hover:underline">
-        &larr; Back to news
-      </Link>
+    <article>
+      {post.image_url && (
+        <div className="relative aspect-[21/9] w-full overflow-hidden bg-ink/5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={post.image_url}
+            alt={post.title}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      )}
 
-      <p className="mt-6 text-xs uppercase tracking-wide text-brass">
-        {new Date(post.created_at).toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}
-      </p>
-      <h1
-        className="mt-2 text-4xl leading-tight text-ink"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        {post.title}
-      </h1>
+      <div className="mx-auto max-w-2xl px-6 py-16">
+        <Link href="/news" className="text-sm text-brass hover:underline">
+          &larr; Back to news
+        </Link>
 
-      <div className="mt-8 whitespace-pre-wrap text-base leading-7 text-charcoal">
-        {post.body}
+        <p className="mt-6 text-xs uppercase tracking-wide text-brass">
+          {new Date(post.created_at).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </p>
+        <h1
+          className="mt-2 text-4xl leading-tight text-ink"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {post.title}
+        </h1>
+
+        <div className="mt-8 whitespace-pre-wrap text-base leading-7 text-charcoal">
+          {post.body}
+        </div>
       </div>
     </article>
   );
