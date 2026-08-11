@@ -12,23 +12,33 @@ type ScrollStaggerProps = {
   className?: string;
 };
 
+// Each direct child gets its own independent ScrollTrigger, rather than
+// one shared tween animating an array of targets via GSAP's `stagger`
+// option. The shared-stagger approach was leaving later items stuck
+// mid-animation in this app (cause not fully isolated) — giving every
+// item its own trigger, the same proven mechanism ScrollReveal already
+// uses correctly for single elements, sidesteps it entirely.
 export default function ScrollStagger({ children, className }: ScrollStaggerProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
       if (!ref.current) return;
-      gsap.from(ref.current.children, {
-        y: 30,
-        opacity: 0,
-        duration: 0.7,
-        stagger: 0.12,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: ref.current,
-          start: "top 85%",
-          toggleActions: "play none none reverse",
-        },
+      const items = Array.from(ref.current.children);
+
+      items.forEach((item, i) => {
+        gsap.from(item, {
+          y: 30,
+          opacity: 0,
+          duration: 0.7,
+          delay: i * 0.1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: item,
+            start: "top 90%",
+            toggleActions: "play none none reverse",
+          },
+        });
       });
     },
     { scope: ref }

@@ -52,12 +52,19 @@ export default function SmoothScrollProvider({
     { dependencies: [smoothEnabled], scope: wrapperRef }
   );
 
-  // Reset scroll and re-measure trigger positions on client-side navigation
-  // (App Router keeps this layout mounted across route changes).
+  // Reset scroll position on client-side navigation so the new page starts
+  // at the top (App Router keeps this layout mounted across route changes,
+  // so scroll position otherwise carries over from the previous page).
+  //
+  // Deliberately NOT calling ScrollTrigger.refresh() here: the new page's
+  // ScrollReveal/ScrollStagger components create their own triggers fresh
+  // on mount, already measuring correct positions — they don't need it.
+  // A refresh() shortly after navigation was actually landing mid-flight
+  // on staggered animations (each card starts ~0.12s apart) and killing
+  // them partway through, leaving later items stuck faded. Don't add it
+  // back without a very good reason.
   useEffect(() => {
     smootherRef.current?.scrollTo(0, false);
-    const id = requestAnimationFrame(() => ScrollTrigger.refresh());
-    return () => cancelAnimationFrame(id);
   }, [pathname]);
 
   return (
