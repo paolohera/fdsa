@@ -8,23 +8,24 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-ink px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <p className="text-xs font-medium uppercase tracking-widest text-slate-400">
-            University CMS
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.3em] text-brass"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            FDSA Content Admin
           </p>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-900">
-            Sign in
-          </h1>
+          <h1 className="mt-1 text-2xl font-semibold text-white">Sign in</h1>
         </div>
 
         <form
           action={login}
-          className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+          className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm"
         >
           {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-300">
               {error}
             </p>
           )}
@@ -32,7 +33,7 @@ export default async function LoginPage({
           <div>
             <label
               htmlFor="email"
-              className="mb-1 block text-sm font-medium text-slate-700"
+              className="mb-1 block text-sm font-medium text-parchment/80"
             >
               Email
             </label>
@@ -42,14 +43,14 @@ export default async function LoginPage({
               type="email"
               required
               autoComplete="email"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500"
+              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-parchment/30 focus:border-brass focus:ring-1 focus:ring-brass"
             />
           </div>
 
           <div>
             <label
               htmlFor="password"
-              className="mb-1 block text-sm font-medium text-slate-700"
+              className="mb-1 block text-sm font-medium text-parchment/80"
             >
               Password
             </label>
@@ -59,19 +60,19 @@ export default async function LoginPage({
               type="password"
               required
               autoComplete="current-password"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500"
+              className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-parchment/30 focus:border-brass focus:ring-1 focus:ring-brass"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+            className="w-full rounded-md bg-brass px-3 py-2.5 text-sm font-medium text-ink transition hover:bg-brass/90"
           >
             Sign in
           </button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-slate-400">
+        <p className="mt-4 text-center text-xs text-parchment/40">
           Accounts are created in the Supabase dashboard for now — no public
           signup.
         </p>

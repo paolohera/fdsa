@@ -24,7 +24,8 @@ export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   revalidatePath("/admin", "layout");
-  redirect("/admin/login");
+  revalidatePath("/", "layout");
+  redirect("/");
 }
 
 // Used by the spacebar-triggered login modal. Unlike `login`, this never

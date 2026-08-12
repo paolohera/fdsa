@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { LayoutDashboard, Newspaper, GalleryHorizontal, Image as ImageIcon, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "../login/actions";
+import AdminNavLink from "@/components/admin/admin-nav-link";
 
 export const dynamic = "force-dynamic";
 
@@ -20,11 +21,10 @@ export default async function AdminLayout({
   // but the login page itself renders through this same route group without
   // a user, so bail out quietly rather than double-guarding there.
   if (!user) {
-    console.log("DEBUG admin check: no user found on request");
     return <>{children}</>;
   }
 
-const { data: profile } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("role, email")
     .eq("id", user.id)
@@ -35,42 +35,47 @@ const { data: profile } = await supabase
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-6">
-            <span className="text-sm font-semibold text-slate-900">
-              University CMS
-            </span>
-           <nav className="flex gap-4 text-sm text-slate-500">
-              <Link href="/admin" className="hover:text-slate-900">
-                Dashboard
-              </Link>
-              <Link href="/admin/news" className="hover:text-slate-900">
-                News
-              </Link>
-              <Link href="/admin/hero" className="hover:text-slate-900">
-                Hero Carousel
-              </Link>
-              <Link href="/admin/about" className="hover:text-slate-900">
-                About Image
-              </Link>
-           
-            </nav>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-slate-500">
-            <span>
-              {profile.email} · <span className="capitalize">{profile.role}</span>
-            </span>
-            <form action={logout}>
-              <button type="submit" className="text-slate-500 hover:text-slate-900">
-                Sign out
-              </button>
-            </form>
-          </div>
+    <div className="flex min-h-screen bg-slate-50">
+      {/* Sidebar */}
+      <aside className="fixed inset-y-0 left-0 flex w-60 flex-col bg-ink">
+        <div className="px-5 py-6">
+          <p
+            className="text-xs font-semibold uppercase tracking-[0.25em] text-brass"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            FDSA
+          </p>
+          <p className="mt-0.5 text-sm text-parchment/70">Content Admin</p>
         </div>
-      </header>
-      <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
+
+        <nav className="flex-1 space-y-1 px-3">
+          <AdminNavLink href="/admin" label="Dashboard" icon={<LayoutDashboard size={17} strokeWidth={2} />} />
+          <AdminNavLink href="/admin/news" label="News" icon={<Newspaper size={17} strokeWidth={2} />} />
+          <AdminNavLink href="/admin/hero" label="Hero Carousel" icon={<GalleryHorizontal size={17} strokeWidth={2} />} />
+          <AdminNavLink href="/admin/about" label="About Image" icon={<ImageIcon size={17} strokeWidth={2} />} />
+        </nav>
+
+        <div className="border-t border-white/10 px-3 py-4">
+          <div className="rounded-md px-3 py-2">
+            <p className="truncate text-xs text-parchment/50">{profile.email}</p>
+            <p className="text-xs capitalize text-brass">{profile.role}</p>
+          </div>
+          <form action={logout}>
+            <button
+              type="submit"
+              className="mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-parchment/60 transition hover:bg-white/5 hover:text-parchment/90"
+            >
+              <LogOut size={17} strokeWidth={2} />
+              Sign out
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      {/* Content */}
+      <div className="ml-60 flex-1">
+        <main className="mx-auto max-w-5xl px-8 py-10">{children}</main>
+      </div>
     </div>
   );
 }

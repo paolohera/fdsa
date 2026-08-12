@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Newspaper, GalleryHorizontal, Image as ImageIcon } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { AdminPageHeader, AdminCard } from "@/components/admin/admin-ui";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -8,23 +10,57 @@ export default async function AdminDashboard() {
     .from("news_posts")
     .select("*", { count: "exact", head: true });
 
+  const { count: heroCount } = await supabase
+    .from("hero_slides")
+    .select("*", { count: "exact", head: true });
+
+  const { data: aboutImage } = await supabase
+    .from("about_image")
+    .select("id")
+    .maybeSingle();
+
+  const stats = [
+    {
+      label: "News posts",
+      value: newsCount ?? 0,
+      href: "/admin/news",
+      icon: Newspaper,
+    },
+    {
+      label: "Hero slides",
+      value: heroCount ?? 0,
+      href: "/admin/hero",
+      icon: GalleryHorizontal,
+    },
+    {
+      label: "About image",
+      value: aboutImage ? "Set" : "Not set",
+      href: "/admin/about",
+      icon: ImageIcon,
+    },
+  ];
+
   return (
     <div>
-      <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
-      <p className="mt-1 text-sm text-slate-500">
-        Database connection is live if the count below loaded without an error.
-      </p>
+      <AdminPageHeader
+        title="Dashboard"
+        description="Overview of your site's content. The database connection is live if these numbers loaded without error."
+      />
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <Link
-          href="/admin/news"
-          className="rounded-lg border border-slate-200 bg-white p-4 transition hover:border-slate-300"
-        >
-          <p className="text-2xl font-semibold text-slate-900">
-            {newsCount ?? 0}
-          </p>
-          <p className="mt-1 text-sm text-slate-500">News posts</p>
-        </Link>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {stats.map((stat) => (
+          <Link key={stat.label} href={stat.href}>
+            <AdminCard className="p-5 transition hover:border-slate-300 hover:shadow-md">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-slate-500">{stat.label}</p>
+                <stat.icon size={18} className="text-slate-400" />
+              </div>
+              <p className="mt-3 text-3xl font-semibold text-slate-900">
+                {stat.value}
+              </p>
+            </AdminCard>
+          </Link>
+        ))}
       </div>
     </div>
   );

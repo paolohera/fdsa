@@ -1,5 +1,6 @@
-import PostForm from "../post-form";
 import { createPost } from "../actions";
+import { AdminPageHeader } from "@/components/admin/admin-ui";
+import PostForm from "../post-form";
 
 export default async function NewPostPage({
   searchParams,
@@ -10,10 +11,8 @@ export default async function NewPostPage({
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-slate-900">New post</h1>
-      <div className="mt-6">
-        <PostForm action={createPost} error={error} />
-      </div>
+      <AdminPageHeader title="New post" />
+      <PostForm action={createPost} error={error} />
     </div>
   );
 }

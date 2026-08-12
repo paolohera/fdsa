@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { AdminPageHeader } from "@/components/admin/admin-ui";
 import PostForm from "../post-form";
 import { updatePost } from "../actions";
 
@@ -26,10 +27,8 @@ export default async function EditPostPage({
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-slate-900">Edit post</h1>
-      <div className="mt-6">
-        <PostForm action={updatePostWithId} defaultValues={post} error={error} />
-      </div>
+      <AdminPageHeader title="Edit post" />
+      <PostForm action={updatePostWithId} defaultValues={post} error={error} />
     </div>
   );
 }
