@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import HeroCarousel from "@/components/hero-carousel";
+import HeroSection from "@/components/hero-section";
 import ScrollReveal from "@/components/scroll-reveal";
 import ScrollStagger from "@/components/scroll-stagger";
 import NewsCard from "@/components/news-card";
@@ -17,26 +17,6 @@ export default async function HomePage() {
     .order("created_at", { ascending: false })
     .limit(3);
 
-  const { data: heroSlidesRaw } = await supabase
-    .from("hero_slides")
-    .select(
-      "id, image_url, title, description, cta_label, cta_url, position, hero_slide_stats(id, value, label, position)"
-    )
-    .order("position", { ascending: true });
-
-  const heroSlides =
-    heroSlidesRaw?.map((slide) => ({
-      id: slide.id,
-      image_url: slide.image_url,
-      title: slide.title,
-      description: slide.description,
-      cta_label: slide.cta_label,
-      cta_url: slide.cta_url,
-      stats: (slide.hero_slide_stats ?? [])
-        .slice()
-        .sort((a, b) => a.position - b.position),
-    })) ?? [];
-
   const { data: aboutImage } = await supabase
     .from("about_image")
     .select("image_url")
@@ -44,8 +24,8 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* Hero carousel */}
-      <HeroCarousel slides={heroSlides} />
+      {/* Hero */}
+      <HeroSection />
 
       {/* About preview */}
       <section className="border-y border-ink/10 bg-paper">
