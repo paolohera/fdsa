@@ -12,7 +12,7 @@ export default async function HomePage() {
 
   const { data: posts } = await supabase
     .from("news_posts")
-    .select("id, title, slug, body, created_at, image_url")
+    .select("id, title, slug, body, created_at, image_url, location")
     .eq("published", true)
     .order("created_at", { ascending: false })
     .limit(3);
@@ -86,7 +86,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Latest news */}
+      {/* Latest news — bento grid */}
       <section className="mx-auto max-w-5xl px-6 py-16">
         <ScrollReveal>
           <div className="flex items-baseline justify-between border-b border-ink/20 pb-3">
@@ -108,8 +108,8 @@ export default async function HomePage() {
           </p>
         )}
 
-        <ScrollStagger className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts?.map((post) => (
+        <ScrollStagger className="mt-8 grid grid-cols-1 gap-4 sm:grid-flow-row-dense sm:grid-cols-3 sm:auto-rows-[220px]">
+          {posts?.map((post, index) => (
             <NewsCard
               key={post.id}
               slug={post.slug}
@@ -117,6 +117,8 @@ export default async function HomePage() {
               body={post.body}
               createdAt={post.created_at}
               imageUrl={post.image_url}
+              location={post.location}
+              featured={index % 3 === 0}
             />
           ))}
         </ScrollStagger>

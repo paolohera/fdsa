@@ -9,6 +9,7 @@ type PostFormProps = {
     body: string;
     published: boolean;
     image_url?: string | null;
+    location?: string | null;
   };
   error?: string;
 };
@@ -67,6 +68,27 @@ export default function PostForm({ action, defaultValues, error }: PostFormProps
 
         <div>
           <label
+            htmlFor="location"
+            className="mb-1.5 block text-sm font-medium text-slate-700"
+          >
+            Location
+          </label>
+          <input
+            id="location"
+            name="location"
+            type="text"
+            placeholder="e.g. FDSA Campus, Lapu-Lapu City"
+            defaultValue={defaultValues?.location ?? ""}
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+          />
+          <p className="mt-1.5 text-xs text-slate-400">
+            Where this happened. Optional — shown next to the date on news
+            cards.
+          </p>
+        </div>
+
+        <div>
+          <label
             htmlFor="body"
             className="mb-1.5 block text-sm font-medium text-slate-700"
           >
@@ -81,7 +103,7 @@ export default function PostForm({ action, defaultValues, error }: PostFormProps
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
           />
           <p className="mt-1.5 text-xs text-slate-400">
-            The first ~140 characters show as the excerpt on news cards.
+            The first ~140–200 characters show as the excerpt on news cards.
           </p>
         </div>
 

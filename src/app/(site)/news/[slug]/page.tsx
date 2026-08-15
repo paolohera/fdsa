@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
 export const revalidate = 60;
@@ -14,7 +15,7 @@ export default async function NewsDetailPage({
 
   const { data: post } = await supabase
     .from("news_posts")
-    .select("title, body, created_at, image_url")
+    .select("title, body, created_at, image_url, location")
     .eq("slug", slug)
     .eq("published", true)
     .single();
@@ -39,13 +40,22 @@ export default async function NewsDetailPage({
           &larr; Back to news
         </Link>
 
-        <p className="mt-6 text-xs uppercase tracking-wide text-brass">
-          {new Date(post.created_at).toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
+        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs uppercase tracking-wide text-brass">
+          <span>
+            {new Date(post.created_at).toLocaleDateString(undefined, {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </span>
+          {post.location && (
+            <span className="inline-flex items-center gap-1 normal-case tracking-normal text-charcoal/60">
+              <MapPin size={13} className="shrink-0" />
+              {post.location}
+            </span>
+          )}
+        </div>
+
         <h1
           className="mt-2 text-4xl leading-tight text-ink"
           style={{ fontFamily: "var(--font-display)" }}

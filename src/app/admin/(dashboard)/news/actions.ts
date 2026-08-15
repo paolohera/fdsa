@@ -25,6 +25,7 @@ export async function createPost(formData: FormData) {
 
   const title = formData.get("title") as string;
   const body = formData.get("body") as string;
+  const location = (formData.get("location") as string) || null;
   const published = formData.get("published") === "on";
   const imageFile = formData.get("image") as File | null;
 
@@ -53,6 +54,7 @@ export async function createPost(formData: FormData) {
     title,
     slug: slugify(title),
     body,
+    location,
     published,
     author_id: user?.id,
     image_url: imageUrl,
@@ -74,6 +76,7 @@ export async function updatePost(id: string, formData: FormData) {
 
   const title = formData.get("title") as string;
   const body = formData.get("body") as string;
+  const location = (formData.get("location") as string) || null;
   const published = formData.get("published") === "on";
   const imageFile = formData.get("image") as File | null;
 
@@ -81,6 +84,7 @@ export async function updatePost(id: string, formData: FormData) {
     title,
     slug: slugify(title),
     body,
+    location,
     published,
   };
 

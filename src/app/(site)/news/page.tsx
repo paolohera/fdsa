@@ -8,7 +8,7 @@ export default async function NewsListPage() {
 
   const { data: posts } = await supabase
     .from("news_posts")
-    .select("id, title, slug, body, created_at, image_url")
+    .select("id, title, slug, body, created_at, image_url, location")
     .eq("published", true)
     .order("created_at", { ascending: false });
 
@@ -33,8 +33,8 @@ export default async function NewsListPage() {
         </p>
       )}
 
-      <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {posts?.map((post) => (
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-flow-row-dense sm:grid-cols-3 sm:auto-rows-[220px]">
+        {posts?.map((post, index) => (
           <NewsCard
             key={post.id}
             slug={post.slug}
@@ -42,6 +42,8 @@ export default async function NewsListPage() {
             body={post.body}
             createdAt={post.created_at}
             imageUrl={post.image_url}
+            location={post.location}
+            featured={index % 3 === 0}
           />
         ))}
       </div>

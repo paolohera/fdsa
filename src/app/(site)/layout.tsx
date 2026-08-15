@@ -17,7 +17,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <SecretLoginModal />
 
       <SmoothScrollProvider>
-        <div className="flex min-h-screen flex-col pt-20">
+        <div className="flex min-h-screen flex-col">
           <main className="flex-1">{children}</main>
 
           <footer className="border-t-4 border-double border-brass/30 bg-ink text-parchment/70">
