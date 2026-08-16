@@ -36,7 +36,11 @@ export default function SiteHeader() {
   }, [open]);
 
   const drawer = (
-    <>
+    <div
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
       <div
         onClick={() => setOpen(false)}
         aria-hidden="true"
@@ -46,11 +50,12 @@ export default function SiteHeader() {
       />
       <div
         className={`fixed inset-y-0 right-0 z-50 w-80 max-w-[85%] transform bg-ink shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] md:hidden ${
-          open ? "translate-x-0" : "translate-x-full"
+          open ? "translate-x-0" : "pointer-events-none translate-x-full"
         }`}
         role="dialog"
         aria-modal="true"
         aria-label="Site menu"
+        {...(!open ? { inert: true } : {})}
       >
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <div className="flex items-center gap-2.5">
@@ -88,11 +93,14 @@ export default function SiteHeader() {
           ))}
         </nav>
       </div>
-    </>
+    </div>
   );
 
   return (
     <header
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
       className={[
         "fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-ink/95 backdrop-blur-md transition-all duration-500 ease-out",
         scrolled ? "shadow-[0_8px_24px_-16px_rgba(0,0,0,0.5)]" : "shadow-none",
@@ -138,7 +146,9 @@ export default function SiteHeader() {
             data-animate
             onClick={() => setOpen(true)}
             aria-label="Open menu"
-            className="rounded-full p-1.5 text-parchment transition-colors duration-300 hover:bg-white/10 md:hidden"
+            aria-expanded={open}
+            style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+            className="relative z-10 -m-2 rounded-full p-3.5 text-parchment transition-colors duration-300 active:bg-white/15 md:hidden md:p-1.5"
           >
             <Menu size={22} />
           </button>
