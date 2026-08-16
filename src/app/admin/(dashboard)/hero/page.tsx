@@ -34,14 +34,14 @@ export default async function HeroSlidesPage() {
       {(!slides || slides.length === 0) ? (
         <AdminEmptyState>No slides yet. Create the first one.</AdminEmptyState>
       ) : (
-        <AdminCard className="divide-y divide-slate-100">
+        <AdminCard className="divide-y divide-ink/10">
           {slides.map((slide, index) => (
             <div key={slide.id} className="flex items-center gap-4 p-4">
-              <span className="w-5 text-center text-sm font-medium text-slate-400">
+              <span className="w-5 text-center text-sm font-medium text-charcoal/40">
                 {index + 1}
               </span>
 
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-slate-100">
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-ink/5">
                 <Image
                   src={slide.image_url}
                   alt={slide.title}
@@ -53,7 +53,7 @@ export default async function HeroSlidesPage() {
 
               <Link
                 href={`/admin/hero/${slide.id}`}
-                className="flex-1 text-sm font-medium text-slate-900 hover:underline"
+                className="flex-1 text-sm font-medium text-ink hover:underline"
               >
                 {slide.title}
               </Link>

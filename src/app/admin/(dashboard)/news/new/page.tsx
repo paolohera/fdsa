@@ -1,5 +1,6 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { createPost } from "../actions";
-import { AdminPageHeader } from "@/components/admin/admin-ui";
 import PostForm from "../post-form";
 
 export default async function NewPostPage({
@@ -11,7 +12,13 @@ export default async function NewPostPage({
 
   return (
     <div>
-      <AdminPageHeader title="New post" />
+      <Link
+        href="/admin/news"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-charcoal/60 hover:text-ink"
+      >
+        <ArrowLeft size={15} />
+        Back to news
+      </Link>
       <PostForm action={createPost} error={error} />
     </div>
   );

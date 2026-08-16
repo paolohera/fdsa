@@ -1,6 +1,8 @@
 "use client";
 
-import { AdminCard, AdminButton } from "@/components/admin/admin-ui";
+import { useState } from "react";
+import { ImagePlus, MapPin } from "lucide-react";
+import { AdminCard, AdminButton, AdminBadge } from "@/components/admin/admin-ui";
 
 type PostFormProps = {
   action: (formData: FormData) => void;
@@ -14,111 +16,134 @@ type PostFormProps = {
   error?: string;
 };
 
+const EXCERPT_TARGET = 200;
+
 export default function PostForm({ action, defaultValues, error }: PostFormProps) {
+  const [body, setBody] = useState(defaultValues?.body ?? "");
+  const [published, setPublished] = useState(defaultValues?.published ?? false);
+  const [preview, setPreview] = useState<string | null>(defaultValues?.image_url ?? null);
+
   return (
-    <form action={action} className="max-w-2xl">
+    <form action={action}>
       {error && (
         <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
         </p>
       )}
 
-      <AdminCard className="space-y-5 p-6">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Featured image
-          </label>
-          {defaultValues?.image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={defaultValues.image_url}
-              alt=""
-              className="mb-2 h-32 w-full max-w-xs rounded-md border border-slate-200 object-cover"
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Main content */}
+        <div className="lg:col-span-2">
+          <AdminCard className="p-6">
+            <input
+              name="title"
+              type="text"
+              required
+              placeholder="Post title"
+              defaultValue={defaultValues?.title}
+              className="w-full border-0 border-b border-ink/10 pb-3 text-2xl text-ink outline-none placeholder:text-charcoal/30 focus:border-brass"
+              style={{ fontFamily: "var(--font-display)" }}
             />
-          )}
-          <input
-            type="file"
-            name="image"
-            accept="image/*"
-            className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
-          />
-          <p className="mt-1.5 text-xs text-slate-400">
-            {defaultValues?.image_url
-              ? "Choose a file to replace the current image."
-              : "Shown on news cards. Optional — leave blank for a text-only card."}
-          </p>
+
+            <div className="mt-4 flex items-center gap-2 text-charcoal/50">
+              <MapPin size={15} className="shrink-0" />
+              <input
+                name="location"
+                type="text"
+                placeholder="Location — e.g. FDSA Campus, Lapu-Lapu City"
+                defaultValue={defaultValues?.location ?? ""}
+                className="w-full border-0 py-1 text-sm text-ink outline-none placeholder:text-charcoal/40"
+              />
+            </div>
+
+            <textarea
+              name="body"
+              rows={16}
+              required
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Write the post body…"
+              className="mt-5 w-full resize-y border-t border-ink/10 pt-5 text-sm leading-6 text-ink outline-none placeholder:text-charcoal/30"
+            />
+
+            <div className="mt-2 flex items-center justify-between text-xs text-charcoal/40">
+              <span>The first ~140–200 characters show as the excerpt on news cards.</span>
+              <span className={body.length > EXCERPT_TARGET ? "text-brass" : ""}>
+                {body.length} chars
+              </span>
+            </div>
+          </AdminCard>
         </div>
 
-        <div>
-          <label
-            htmlFor="title"
-            className="mb-1.5 block text-sm font-medium text-slate-700"
-          >
-            Title
-          </label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            required
-            defaultValue={defaultValues?.title}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
-          />
+        {/* Sidebar */}
+        <div className="space-y-6 lg:col-span-1">
+          <AdminCard className="p-5">
+            <div className="flex items-center justify-between border-b border-ink/10 pb-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink">
+                Publish
+              </h3>
+              <AdminBadge tone={published ? "green" : "slate"}>
+                {published ? "Published" : "Draft"}
+              </AdminBadge>
+            </div>
+
+            <label className="mt-4 flex cursor-pointer items-center justify-between">
+              <span className="text-sm text-ink">Visible to the public</span>
+              <span className="relative inline-flex items-center">
+                <input
+                  name="published"
+                  type="checkbox"
+                  checked={published}
+                  onChange={(e) => setPublished(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <span className="h-6 w-11 rounded-full bg-ink/15 transition-colors peer-checked:bg-brass" />
+                <span className="absolute left-1 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+              </span>
+            </label>
+
+            <AdminButton type="submit" className="mt-5 w-full justify-center">
+              Save
+            </AdminButton>
+          </AdminCard>
+
+          <AdminCard className="p-5">
+            <h3 className="border-b border-ink/10 pb-3 text-sm font-semibold uppercase tracking-wide text-ink">
+              Featured image
+            </h3>
+
+            <label className="mt-4 block cursor-pointer">
+              <div className="group relative aspect-[4/3] w-full overflow-hidden border border-dashed border-ink/20 bg-ink/[0.02] transition-colors hover:border-brass/50">
+                {preview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={preview} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-charcoal/40">
+                    <ImagePlus size={22} />
+                    <span className="text-xs">Click to upload</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-ink/60 text-xs font-medium text-parchment opacity-0 transition-opacity group-hover:opacity-100">
+                  {preview ? "Replace image" : "Choose file"}
+                </div>
+              </div>
+              <input
+                type="file"
+                name="image"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setPreview(URL.createObjectURL(file));
+                }}
+              />
+            </label>
+            <p className="mt-2 text-xs text-charcoal/40">
+              Shown on news cards. Optional — leave blank for a text-only card.
+            </p>
+          </AdminCard>
         </div>
-
-        <div>
-          <label
-            htmlFor="location"
-            className="mb-1.5 block text-sm font-medium text-slate-700"
-          >
-            Location
-          </label>
-          <input
-            id="location"
-            name="location"
-            type="text"
-            placeholder="e.g. FDSA Campus, Lapu-Lapu City"
-            defaultValue={defaultValues?.location ?? ""}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
-          />
-          <p className="mt-1.5 text-xs text-slate-400">
-            Where this happened. Optional — shown next to the date on news
-            cards.
-          </p>
-        </div>
-
-        <div>
-          <label
-            htmlFor="body"
-            className="mb-1.5 block text-sm font-medium text-slate-700"
-          >
-            Body
-          </label>
-          <textarea
-            id="body"
-            name="body"
-            rows={10}
-            required
-            defaultValue={defaultValues?.body}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
-          />
-          <p className="mt-1.5 text-xs text-slate-400">
-            The first ~140–200 characters show as the excerpt on news cards.
-          </p>
-        </div>
-
-        <label className="flex items-center gap-2 text-sm text-slate-700">
-          <input
-            name="published"
-            type="checkbox"
-            defaultChecked={defaultValues?.published}
-            className="h-4 w-4 rounded border-slate-300 text-ink focus:ring-ink"
-          />
-          Published (visible to the public)
-        </label>
-
-        <AdminButton type="submit">Save</AdminButton>
-      </AdminCard>
+      </div>
     </form>
   );
 }

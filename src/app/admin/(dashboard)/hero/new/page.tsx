@@ -21,7 +21,7 @@ export default async function NewSlidePage({
 
         <AdminCard className="space-y-5 p-6">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium text-ink">
               Student photo
             </label>
             <input
@@ -29,12 +29,12 @@ export default async function NewSlidePage({
               name="image"
               accept="image/*"
               required
-              className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+              className="block w-full text-sm text-charcoal/60 file:mr-3 file:border-0 file:bg-ink/5 file:px-3 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-ink/10"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium text-ink">
               Program title
             </label>
             <input
@@ -42,49 +42,49 @@ export default async function NewSlidePage({
               name="title"
               required
               placeholder="Associate in Aircraft Maintenance Technology"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+              className="w-full border border-ink/20 px-3 py-2 text-sm outline-none focus:border-brass focus:ring-1 focus:ring-brass"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium text-ink">
               Short description
             </label>
             <textarea
               name="description"
               rows={3}
               placeholder="A short blurb about this program."
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+              className="w-full border border-ink/20 px-3 py-2 text-sm outline-none focus:border-brass focus:ring-1 focus:ring-brass"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              <label className="mb-1.5 block text-sm font-medium text-ink">
                 Button label
               </label>
               <input
                 type="text"
                 name="cta_label"
                 defaultValue="Enroll Now"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+                className="w-full border border-ink/20 px-3 py-2 text-sm outline-none focus:border-brass focus:ring-1 focus:ring-brass"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              <label className="mb-1.5 block text-sm font-medium text-ink">
                 Button link
               </label>
               <input
                 type="text"
                 name="cta_url"
                 defaultValue="/programs"
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+                className="w-full border border-ink/20 px-3 py-2 text-sm outline-none focus:border-brass focus:ring-1 focus:ring-brass"
               />
             </div>
           </div>
 
           <AdminButton type="submit">Create slide</AdminButton>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-charcoal/40">
             You&apos;ll be able to add stats (e.g. &quot;150+ Students
             Enrolled&quot;) after creating the slide.
           </p>

@@ -58,7 +58,7 @@ export default async function EditSlidePage({
 
       {/* Image */}
       <AdminCard className="max-w-lg p-6">
-        <div className="relative h-36 w-36 overflow-hidden rounded-full bg-slate-100">
+        <div className="relative h-36 w-36 overflow-hidden rounded-full bg-ink/5">
           <Image
             src={slide.image_url}
             alt={slide.title}
@@ -73,7 +73,7 @@ export default async function EditSlidePage({
             name="image"
             accept="image/*"
             required
-            className="flex-1 text-xs text-slate-600 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-2.5 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+            className="flex-1 text-xs text-charcoal/60 file:mr-2 file:border-0 file:bg-ink/5 file:px-2.5 file:py-1.5 file:text-xs file:font-medium file:text-ink hover:file:bg-ink/10"
           />
           <AdminButton variant="secondary" type="submit">
             Replace
@@ -85,7 +85,7 @@ export default async function EditSlidePage({
       <form action={updateSlideDetailsWithId} className="mt-6 max-w-lg">
         <AdminCard className="space-y-5 p-6">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium text-ink">
               Program title
             </label>
             <input
@@ -93,43 +93,43 @@ export default async function EditSlidePage({
               name="title"
               required
               defaultValue={slide.title}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+              className="w-full border border-ink/20 px-3 py-2 text-sm outline-none focus:border-brass focus:ring-1 focus:ring-brass"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium text-ink">
               Short description
             </label>
             <textarea
               name="description"
               rows={3}
               defaultValue={slide.description}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+              className="w-full border border-ink/20 px-3 py-2 text-sm outline-none focus:border-brass focus:ring-1 focus:ring-brass"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              <label className="mb-1.5 block text-sm font-medium text-ink">
                 Button label
               </label>
               <input
                 type="text"
                 name="cta_label"
                 defaultValue={slide.cta_label}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+                className="w-full border border-ink/20 px-3 py-2 text-sm outline-none focus:border-brass focus:ring-1 focus:ring-brass"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              <label className="mb-1.5 block text-sm font-medium text-ink">
                 Button link
               </label>
               <input
                 type="text"
                 name="cta_url"
                 defaultValue={slide.cta_url}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+                className="w-full border border-ink/20 px-3 py-2 text-sm outline-none focus:border-brass focus:ring-1 focus:ring-brass"
               />
             </div>
           </div>
@@ -140,7 +140,7 @@ export default async function EditSlidePage({
 
       {/* Stats */}
       <div className="mt-10 max-w-lg">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-charcoal/50">
           Stats shown next to this slide
         </h2>
 
@@ -166,14 +166,14 @@ export default async function EditSlidePage({
                       name="value"
                       defaultValue={stat.value}
                       placeholder="150+"
-                      className="w-24 rounded-md border border-slate-300 px-2 py-1.5 text-sm outline-none focus:border-ink"
+                      className="w-24 border border-ink/20 px-2 py-1.5 text-sm outline-none focus:border-brass"
                     />
                     <input
                       type="text"
                       name="label"
                       defaultValue={stat.label}
                       placeholder="Students Enrolled"
-                      className="flex-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm outline-none focus:border-ink"
+                      className="flex-1 border border-ink/20 px-2 py-1.5 text-sm outline-none focus:border-brass"
                     />
                     <AdminButton variant="secondary" type="submit" className="px-3 py-1.5 text-xs">
                       Save
@@ -203,21 +203,21 @@ export default async function EditSlidePage({
 
         <form
           action={addStatWithId}
-          className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-slate-300 p-3"
+          className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-ink/20 p-3"
         >
           <input
             type="text"
             name="value"
             placeholder="150+"
             required
-            className="w-24 rounded-md border border-slate-300 px-2 py-1.5 text-sm outline-none focus:border-ink"
+            className="w-24 border border-ink/20 px-2 py-1.5 text-sm outline-none focus:border-brass"
           />
           <input
             type="text"
             name="label"
             placeholder="Students Enrolled"
             required
-            className="flex-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm outline-none focus:border-ink"
+            className="flex-1 border border-ink/20 px-2 py-1.5 text-sm outline-none focus:border-brass"
           />
           <AdminButton type="submit" className="px-3 py-1.5 text-xs">
             Add stat

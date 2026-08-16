@@ -32,7 +32,7 @@ export default async function AboutImagePage({
 
       {image ? (
         <AdminCard className="max-w-sm p-4">
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-slate-100">
+          <div className="relative aspect-[4/3] w-full overflow-hidden bg-ink/5">
             <Image
               src={image.image_url}
               alt="About section"
@@ -48,7 +48,7 @@ export default async function AboutImagePage({
               name="image"
               accept="image/*"
               required
-              className="flex-1 text-xs text-slate-600 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-2.5 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+              className="flex-1 text-xs text-charcoal/60 file:mr-2 file:border-0 file:bg-ink/5 file:px-2.5 file:py-1.5 file:text-xs file:font-medium file:text-ink hover:file:bg-ink/10"
             />
             <AdminButton variant="secondary" type="submit">
               Replace
@@ -69,7 +69,7 @@ export default async function AboutImagePage({
               name="image"
               accept="image/*"
               required
-              className="flex-1 text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+              className="flex-1 text-sm text-charcoal/60 file:mr-3 file:border-0 file:bg-ink/5 file:px-3 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-ink/10"
             />
             <AdminButton type="submit">Add image</AdminButton>
           </form>

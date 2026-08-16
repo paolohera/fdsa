@@ -1,6 +1,7 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AdminPageHeader } from "@/components/admin/admin-ui";
 import PostForm from "../post-form";
 import { updatePost } from "../actions";
 
@@ -27,7 +28,13 @@ export default async function EditPostPage({
 
   return (
     <div>
-      <AdminPageHeader title="Edit post" />
+      <Link
+        href="/admin/news"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-charcoal/60 hover:text-ink"
+      >
+        <ArrowLeft size={15} />
+        Back to news
+      </Link>
       <PostForm action={updatePostWithId} defaultValues={post} error={error} />
     </div>
   );

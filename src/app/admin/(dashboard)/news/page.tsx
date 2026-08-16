@@ -12,13 +12,24 @@ import {
   AdminEmptyState,
 } from "@/components/admin/admin-ui";
 
-export default async function NewsListPage() {
+export default async function NewsListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const supabase = await createClient();
 
-  const { data: posts, error } = await supabase
+  let query = supabase
     .from("news_posts")
     .select("id, title, published, created_at, image_url")
     .order("created_at", { ascending: false });
+
+  if (q) {
+    query = query.ilike("title", `%${q}%`);
+  }
+
+  const { data: posts, error } = await query;
 
   return (
     <div>
@@ -32,6 +43,15 @@ export default async function NewsListPage() {
         }
       />
 
+      {q && (
+        <p className="mb-4 text-sm text-charcoal/60">
+          Showing results for <span className="font-medium text-ink">&ldquo;{q}&rdquo;</span> —{" "}
+          <Link href="/admin/news" className="text-brass hover:underline">
+            clear
+          </Link>
+        </p>
+      )}
+
       {error && (
         <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {error.message}
@@ -39,12 +59,14 @@ export default async function NewsListPage() {
       )}
 
       {posts?.length === 0 ? (
-        <AdminEmptyState>No posts yet. Create the first one.</AdminEmptyState>
+        <AdminEmptyState>
+          {q ? `No posts match "${q}".` : "No posts yet. Create the first one."}
+        </AdminEmptyState>
       ) : (
-        <AdminCard className="divide-y divide-slate-100">
+        <AdminCard className="divide-y divide-ink/10">
           {posts?.map((post) => (
             <div key={post.id} className="flex items-center gap-4 p-4">
-              <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md bg-slate-100">
+              <div className="relative h-12 w-16 shrink-0 overflow-hidden bg-ink/5">
                 {post.image_url ? (
                   <Image
                     src={post.image_url}
@@ -54,7 +76,7 @@ export default async function NewsListPage() {
                     unoptimized
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[10px] text-slate-400">
+                  <div className="flex h-full w-full items-center justify-center text-[10px] text-charcoal/40">
                     No image
                   </div>
                 )}
@@ -63,7 +85,7 @@ export default async function NewsListPage() {
               <div className="flex-1">
                 <Link
                   href={`/admin/news/${post.id}`}
-                  className="text-sm font-medium text-slate-900 hover:underline"
+                  className="text-sm font-medium text-ink hover:underline"
                 >
                   {post.title}
                 </Link>
@@ -71,7 +93,7 @@ export default async function NewsListPage() {
                   <AdminBadge tone={post.published ? "green" : "slate"}>
                     {post.published ? "Published" : "Draft"}
                   </AdminBadge>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-charcoal/40">
                     {new Date(post.created_at).toLocaleDateString()}
                   </span>
                 </div>
