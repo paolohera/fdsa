@@ -20,13 +20,26 @@ export default function SmoothScrollProvider({
   const [smoothEnabled, setSmoothEnabled] = useState(false);
 
   useEffect(() => {
-    // Touch-only devices (phones/tablets) get native scrolling.
-    // ScrollSmoother's virtualized (position: fixed + transform) scroll
-    // fights mobile browsers' own touch handling and can leave the page
-    // completely unscrollable. Desktops/laptops (mouse or hybrid input)
-    // get the smooth momentum scroll. ScrollTrigger.isTouch: 0 = no touch,
-    // 1 = touch-only, 2 = both — we only skip smoothing on pure-touch (1).
-    setSmoothEnabled(ScrollTrigger.isTouch !== 1);
+    // Smooth scroll only runs on desktop/tablet-width viewports with a
+    // non-touch-only input. ScrollSmoother's virtualized (position: fixed +
+    // transform) scroll fights mobile browsers' own touch handling and can
+    // leave the page unscrollable, and its normalizeScroll layer can also
+    // swallow taps on buttons/links in the mobile nav. ScrollTrigger.isTouch
+    // (0 = no touch, 1 = touch-only, 2 = both) isn't fully reliable on its
+    // own — some devices, and Chrome DevTools' device emulator, report "2"
+    // even when the real experience should be treated as mobile — so we
+    // also gate on viewport width (matching the site's `md` breakpoint,
+    // same one the nav uses to switch to the mobile menu). Mobile-width
+    // viewports always get plain native scrolling, full stop.
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+
+    const evaluate = () => {
+      setSmoothEnabled(ScrollTrigger.isTouch !== 1 && mediaQuery.matches);
+    };
+
+    evaluate();
+    mediaQuery.addEventListener("change", evaluate);
+    return () => mediaQuery.removeEventListener("change", evaluate);
   }, []);
 
   useGSAP(
@@ -38,7 +51,10 @@ export default function SmoothScrollProvider({
         content: "#smooth-content",
         smooth: 1.2,
         effects: true,
-        normalizeScroll: true,
+        // normalizeScroll's touch handling can otherwise swallow taps on
+        // buttons/links (it treats touch interactions as potential scroll
+        // gestures) — allowClicks explicitly lets real taps through.
+        normalizeScroll: { allowClicks: true },
       });
 
       document.documentElement.classList.add("gsap-smooth-active");
