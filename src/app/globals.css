@@ -32,6 +32,16 @@ body {
   font-family: var(--font-body);
 }
 
+/*
+  Angular shield/crest shape for the center header logo.
+  Applied to two nested elements (gold outer, navy inner, ~2px inset)
+  to fake a thin gold border around the clipped polygon, since
+  box-shadow/border don't follow clip-path.
+*/
+.crest-shape {
+  clip-path: polygon(12% 0%, 88% 0%, 100% 55%, 50% 100%, 0% 55%);
+}
+
 @keyframes modal-in {
   from {
     opacity: 0;

@@ -7,12 +7,19 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import HeaderIntro from "@/components/header-intro";
 
-const NAV_LINKS = [
+const NAV_LEFT = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/programs", label: "Programs" },
-  { href: "/news", label: "News" },
 ];
+
+const NAV_RIGHT = [
+  { href: "/news", label: "News & Events" },
+  { href: "#", label: "Facilities" },
+  { href: "#", label: "Help Centre" },
+];
+
+const NAV_LINKS = [...NAV_LEFT, ...NAV_RIGHT];
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -80,7 +87,7 @@ export default function SiteHeader() {
         <nav className="flex flex-col gap-1 px-4 py-5">
           {NAV_LINKS.map((link, i) => (
             <Link
-              key={link.href}
+              key={link.label}
               href={link.href}
               onClick={() => setOpen(false)}
               style={{ transitionDelay: open ? `${i * 60 + 100}ms` : "0ms" }}
@@ -107,39 +114,68 @@ export default function SiteHeader() {
       ].join(" ")}
     >
       <HeaderIntro>
-        <div
-          className={[
-            "mx-auto flex max-w-5xl items-center justify-between px-6 transition-[padding] duration-500 ease-out",
-            scrolled ? "py-2" : "py-3 sm:py-4",
-          ].join(" ")}
-        >
-          <Link href="/" data-animate className="flex items-center gap-3">
-            <Image src="/fdsa-logo.png" alt="FDSA crest" width={52} height={52} priority />
-            <div className="leading-tight">
-              <p
-                className="text-base font-bold text-parchment"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                FDSA
-              </p>
-              <p className="hidden text-[10px] uppercase tracking-wider text-parchment/60 sm:block">
-                Flight Dynamics School of Aeronautics
-              </p>
-            </div>
-          </Link>
-
-          <nav data-animate className="hidden items-center gap-1 text-sm md:flex">
-            {NAV_LINKS.map((link) => (
+        {/* ---- Desktop / tablet: split nav with overlapping center crest ---- */}
+        <div className="relative mx-auto hidden h-16 max-w-6xl items-center justify-between px-6 md:flex lg:h-[68px]">
+          <nav data-animate className="flex items-center gap-1 text-sm">
+            {NAV_LEFT.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="group relative rounded-full px-4 py-1.5 font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment"
+                className="group relative rounded-full px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment lg:px-4"
               >
                 {link.label}
                 <span className="absolute inset-x-4 -bottom-0.5 h-px origin-left scale-x-0 bg-brass transition-transform duration-300 ease-out group-hover:scale-x-100" />
               </Link>
             ))}
           </nav>
+
+          {/* Center crest — absolutely positioned so it can overflow below the header
+              into the hero, independent of the flex row's own height. */}
+          <Link
+            href="/"
+            data-animate
+            aria-label="FDSA home"
+            className="group absolute left-1/2 top-0 z-20 -translate-x-1/2"
+          >
+            <div className="crest-shape flex h-[100px] w-[112px] items-start justify-center bg-brass pb-1 transition-transform duration-300 mt-[-17] lg:h-[170px] lg:w-[200px]">
+              <div className="crest-shape flex h-full w-full items-center justify-center bg-ink pt-3">
+                <Image
+                  src="/fdsa-logo.png"
+                  alt="FDSA crest"
+                  width={150}
+                  height={150}
+                  priority
+                  className="object-contain lg:h-30 lg:w-30 mt-[-17]"
+                />
+              </div>
+            </div>
+          </Link>
+
+          <nav data-animate className="flex items-center gap-1 text-sm">
+            {NAV_RIGHT.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="group relative rounded-full px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment lg:px-4"
+              >
+                {link.label}
+                <span className="absolute inset-x-4 -bottom-0.5 h-px origin-left scale-x-0 bg-brass transition-transform duration-300 ease-out group-hover:scale-x-100" />
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* ---- Mobile: small logo left, hamburger right ---- */}
+        <div className="flex h-14 items-center justify-between px-5 md:hidden">
+          <Link href="/" data-animate className="flex items-center gap-2.5">
+            <Image src="/fdsa-logo.png" alt="FDSA crest" width={36} height={36} priority />
+            <p
+              className="text-sm font-bold text-parchment"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              FDSA
+            </p>
+          </Link>
 
           <button
             type="button"
@@ -148,7 +184,7 @@ export default function SiteHeader() {
             aria-label="Open menu"
             aria-expanded={open}
             style={{ touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-            className="relative z-10 -m-2 rounded-full p-3.5 text-parchment transition-colors duration-300 active:bg-white/15 md:hidden md:p-1.5"
+            className="relative z-10 -m-2 rounded-full p-3.5 text-parchment transition-colors duration-300 active:bg-white/15"
           >
             <Menu size={22} />
           </button>
