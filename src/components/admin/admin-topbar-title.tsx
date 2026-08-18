@@ -6,6 +6,7 @@ const SECTION_LABELS: { prefix: string; label: string }[] = [
   { prefix: "/admin/news", label: "News Management" },
   { prefix: "/admin/hero", label: "Hero Carousel" },
   { prefix: "/admin/about", label: "About Image" },
+  { prefix: "/admin/messages", label: "Messages" },
   { prefix: "/admin", label: "Dashboard" },
 ];
 

@@ -3,6 +3,7 @@ import {
   Newspaper,
   GalleryHorizontal,
   Image as ImageIcon,
+  Mail,
   SquarePlus,
   Images,
   ArrowRight,
@@ -21,6 +22,7 @@ export default async function AdminDashboard() {
     { count: heroCount },
     { data: aboutImage },
     { data: recentPosts },
+    { count: unreadMessages },
   ] = await Promise.all([
     supabase.from("news_posts").select("*", { count: "exact", head: true }),
     supabase.from("hero_slides").select("*", { count: "exact", head: true }),
@@ -30,6 +32,10 @@ export default async function AdminDashboard() {
       .select("id, title, published, created_at")
       .order("created_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("contact_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("read", false),
   ]);
 
   const stats = [
@@ -51,12 +57,19 @@ export default async function AdminDashboard() {
       href: "/admin/about",
       icon: ImageIcon,
     },
+    {
+      label: "New messages",
+      value: unreadMessages ?? 0,
+      href: "/admin/messages",
+      icon: Mail,
+    },
   ];
 
   const quickActions = [
     { label: "Draft New Post", href: "/admin/news/new", icon: SquarePlus },
     { label: "Update Carousel", href: "/admin/hero/new", icon: Images },
     { label: "Manage About Image", href: "/admin/about", icon: ImageIcon },
+    { label: "View Messages", href: "/admin/messages", icon: Mail },
   ];
 
   return (
@@ -67,7 +80,7 @@ export default async function AdminDashboard() {
       />
 
       {/* Stat cards */}
-      <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
             <AdminCard className="group relative p-6 hover:border-brass/50">

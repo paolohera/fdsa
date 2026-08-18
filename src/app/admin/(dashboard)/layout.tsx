@@ -5,6 +5,7 @@ import {
   Newspaper,
   GalleryHorizontal,
   Image as ImageIcon,
+  Mail,
   LogOut,
   SquareArrowOutUpRight,
   Plus,
@@ -45,6 +46,11 @@ export default async function AdminLayout({
     redirect("/admin/login?error=Your account does not have admin access yet.");
   }
 
+  const { count: unreadMessages } = await supabase
+    .from("contact_messages")
+    .select("*", { count: "exact", head: true })
+    .eq("read", false);
+
   return (
     <div className="min-h-screen bg-parchment">
       {/* Sidebar */}
@@ -66,6 +72,12 @@ export default async function AdminLayout({
           <AdminNavLink href="/admin/news" label="News Management" icon={<Newspaper size={17} strokeWidth={2} />} />
           <AdminNavLink href="/admin/hero" label="Hero Carousel" icon={<GalleryHorizontal size={17} strokeWidth={2} />} />
           <AdminNavLink href="/admin/about" label="About Image" icon={<ImageIcon size={17} strokeWidth={2} />} />
+          <AdminNavLink
+            href="/admin/messages"
+            label="Messages"
+            icon={<Mail size={17} strokeWidth={2} />}
+            badge={unreadMessages ?? 0}
+          />
         </nav>
 
         <div className="px-6 py-4">

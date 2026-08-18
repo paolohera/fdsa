@@ -111,7 +111,7 @@ export default function SiteHeader() {
       onTouchEnd={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
       className={[
-        "fixed inset-x-0 top-0 z-40 border-b-2 border-brass/70 bg-ink/95 backdrop-blur-md transition-all duration-500 ease-out",
+        "fixed inset-x-0 top-0 z-40 border-b-2 border-brass/100 bg-ink/95 backdrop-blur-md transition-all duration-500 ease-out",
         scrolled ? "shadow-[0_8px_24px_-16px_rgba(0,0,0,0.5)]" : "shadow-none",
       ].join(" ")}
     >
@@ -139,7 +139,7 @@ export default function SiteHeader() {
             aria-label="FDSA home"
             className="group absolute left-1/2 top-0 z-20 -translate-x-1/2"
           >
-            <div className="crest-shape flex h-[100px] w-[112px] items-start justify-center bg-brass pt-1 pb-1 transition-transform duration-300 mt-[-17] lg:h-[170px] lg:w-[200px]">
+            <div className="crest-shape flex h-[100px] w-[112px] items-start justify-center bg-brass pt-1.5 pb-1.5 transition-transform duration-300 mt-[-17] lg:h-[170px] lg:w-[200px]">
               <div className="crest-shape flex h-full w-full items-center justify-center bg-ink pt-3">
                 <Image
                   src="/fdsa-logo.png"

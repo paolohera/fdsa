@@ -20,7 +20,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <div className="flex min-h-screen flex-col">
           <main className="flex-1">{children}</main>
 
-          <footer className="border-t-4 border-double border-brass/30 bg-ink text-parchment/70">
+          <footer className="border-t-2 border-brass/70 bg-ink text-parchment/70">
             <div className="mx-auto max-w-5xl px-6 py-14">
               <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Brand */}
@@ -79,8 +79,17 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
                     <Link href="/programs" className="w-fit transition hover:text-parchment">
                       Programs
                     </Link>
+                    <Link href="/facilities" className="w-fit transition hover:text-parchment">
+                      Facilities
+                    </Link>
                     <Link href="/news" className="w-fit transition hover:text-parchment">
                       News
+                    </Link>
+                    <Link href="/contact" className="w-fit transition hover:text-parchment">
+                      Contact
+                    </Link>
+                    <Link href="/help-centre" className="w-fit transition hover:text-parchment">
+                      Help Centre
                     </Link>
                   </nav>
                 </div>

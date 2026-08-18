@@ -1,5 +1,6 @@
 import { Mail, MapPin } from "lucide-react";
 import ScrollReveal from "@/components/scroll-reveal";
+import ContactForm from "@/components/contact-form";
 
 export default function ContactPage() {
   return (
@@ -92,7 +93,7 @@ export default function ContactPage() {
             </div>
           </ScrollReveal>
 
-          {/* Quick contact — mailto-based, no backend required */}
+          {/* Quick contact — submits to Supabase via a Server Action */}
           <ScrollReveal x={40} y={0} delay={0.15}>
             <div className="border border-ink/15 bg-paper p-6 sm:p-8">
               <h2
@@ -102,71 +103,13 @@ export default function ContactPage() {
                 Send a Message
               </h2>
               <p className="mt-2 text-xs leading-5 text-charcoal/60">
-                This opens your email app with the message pre-filled — send it
-                from there and it'll reach us directly.
+                Fill this out and it'll land directly in our inbox — no email
+                app required.
               </p>
 
-              <form
-                action="mailto:flightdynamicsjdc@gmail.com"
-                method="GET"
-                encType="text/plain"
-                className="mt-6 flex flex-col gap-4"
-              >
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="text-xs font-semibold uppercase tracking-wide text-ink/70"
-                  >
-                    Name
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    required
-                    className="mt-1.5 w-full border border-ink/20 bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-brass"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="reply-to"
-                    className="text-xs font-semibold uppercase tracking-wide text-ink/70"
-                  >
-                    Your Email
-                  </label>
-                  <input
-                    id="reply-to"
-                    name="reply-to"
-                    type="email"
-                    required
-                    className="mt-1.5 w-full border border-ink/20 bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-brass"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="body"
-                    className="text-xs font-semibold uppercase tracking-wide text-ink/70"
-                  >
-                    Message
-                  </label>
-                  <textarea
-                    id="body"
-                    name="body"
-                    rows={4}
-                    required
-                    className="mt-1.5 w-full resize-none border border-ink/20 bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-brass"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="mt-2 inline-flex items-center justify-center gap-2 bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-wide text-parchment transition hover:bg-ink/90"
-                >
-                  Open in Email App
-                </button>
-              </form>
+              <div className="mt-6">
+                <ContactForm />
+              </div>
             </div>
           </ScrollReveal>
         </div>

@@ -8,9 +8,10 @@ type AdminNavLinkProps = {
   href: string;
   label: string;
   icon: ReactNode;
+  badge?: number;
 };
 
-export default function AdminNavLink({ href, label, icon }: AdminNavLinkProps) {
+export default function AdminNavLink({ href, label, icon, badge }: AdminNavLinkProps) {
   const pathname = usePathname();
   const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 
@@ -24,7 +25,12 @@ export default function AdminNavLink({ href, label, icon }: AdminNavLinkProps) {
       }`}
     >
       <span className={active ? "text-brass" : ""}>{icon}</span>
-      {label}
+      <span className="flex-1">{label}</span>
+      {!!badge && badge > 0 && (
+        <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-brass px-1.5 text-[11px] font-bold text-ink">
+          {badge}
+        </span>
+      )}
     </Link>
   );
 }
