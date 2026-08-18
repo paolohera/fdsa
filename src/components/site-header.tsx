@@ -11,12 +11,14 @@ const NAV_LEFT = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/programs", label: "Programs" },
+  { href: "/facilities", label: "Facilities" },
+
 ];
 
 const NAV_RIGHT = [
   { href: "/news", label: "News & Events" },
-  { href: "#", label: "Facilities" },
-  { href: "#", label: "Help Centre" },
+  { href: "/contact", label: "Contact" },
+  { href: "/help-centre", label: "Help Centre" },
 ];
 
 const NAV_LINKS = [...NAV_LEFT, ...NAV_RIGHT];
@@ -109,19 +111,19 @@ export default function SiteHeader() {
       onTouchEnd={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
       className={[
-        "fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-ink/95 backdrop-blur-md transition-all duration-500 ease-out",
+        "fixed inset-x-0 top-0 z-40 border-b-2 border-brass/70 bg-ink/95 backdrop-blur-md transition-all duration-500 ease-out",
         scrolled ? "shadow-[0_8px_24px_-16px_rgba(0,0,0,0.5)]" : "shadow-none",
       ].join(" ")}
     >
       <HeaderIntro>
         {/* ---- Desktop / tablet: split nav with overlapping center crest ---- */}
-        <div className="relative mx-auto hidden h-16 max-w-6xl items-center justify-between px-6 md:flex lg:h-[68px]">
+        <div className="relative mx-auto hidden h-16 max-w-6xl items-center justify-between px-6 md:flex lg:h-[80px]">
           <nav data-animate className="flex items-center gap-1 text-sm">
             {NAV_LEFT.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="group relative rounded-full px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment lg:px-4"
+                className="group relative rounded-full px-3.5 py-1.5 text-[13.5px] font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment lg:px-4"
               >
                 {link.label}
                 <span className="absolute inset-x-4 -bottom-0.5 h-px origin-left scale-x-0 bg-brass transition-transform duration-300 ease-out group-hover:scale-x-100" />
@@ -137,7 +139,7 @@ export default function SiteHeader() {
             aria-label="FDSA home"
             className="group absolute left-1/2 top-0 z-20 -translate-x-1/2"
           >
-            <div className="crest-shape flex h-[100px] w-[112px] items-start justify-center bg-brass pb-1 transition-transform duration-300 mt-[-17] lg:h-[170px] lg:w-[200px]">
+            <div className="crest-shape flex h-[100px] w-[112px] items-start justify-center bg-brass pt-1 pb-1 transition-transform duration-300 mt-[-17] lg:h-[170px] lg:w-[200px]">
               <div className="crest-shape flex h-full w-full items-center justify-center bg-ink pt-3">
                 <Image
                   src="/fdsa-logo.png"
@@ -145,7 +147,7 @@ export default function SiteHeader() {
                   width={150}
                   height={150}
                   priority
-                  className="object-contain lg:h-30 lg:w-30 mt-[-17]"
+                  className="h-20 w-20 object-contain lg:h-30 lg:w-30 mt-[-17]" 
                 />
               </div>
             </div>
@@ -156,7 +158,7 @@ export default function SiteHeader() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="group relative rounded-full px-3.5 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment lg:px-4"
+                className="group relative rounded-full px-3.5 py-1.5 text-[13.5px] font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment lg:px-4"
               >
                 {link.label}
                 <span className="absolute inset-x-4 -bottom-0.5 h-px origin-left scale-x-0 bg-brass transition-transform duration-300 ease-out group-hover:scale-x-100" />

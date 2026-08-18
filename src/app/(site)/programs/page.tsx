@@ -72,8 +72,19 @@ const placeholderBg =
 export default function ProgramsPage() {
   return (
     <div>
-      <section className="border-b border-ink/10 bg-paper">
-        <ScrollReveal className="mx-auto max-w-3xl px-6 py-16 text-center">
+      <section className="relative overflow-hidden bg-ink">
+        {/* Background photo — swap the path below for a relevant campus/training photo. */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url(/programs-hero.jpg)" }}
+        />
+        {/* Navy/brand overlay so parchment text stays legible over any photo */}
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/90 via-ink/80 to-ink/95" />
+
+        {/* pt-* clears the fixed header (h-14 mobile / h-16 md / h-[80px] lg,
+            plus the 2px brass border) with room to spare so the heading
+            never sits under the nav bar or the overlapping crest. */}
+        <ScrollReveal className="relative mx-auto max-w-3xl px-6 pt-28 pb-16 text-center sm:pt-32 sm:pb-20 lg:pt-40">
           <p
             className="text-xs font-semibold uppercase tracking-[0.3em] text-brass"
             style={{ fontFamily: "var(--font-display)" }}
@@ -81,12 +92,12 @@ export default function ProgramsPage() {
             Academics
           </p>
           <h1
-            className="mt-2 text-4xl text-ink"
+            className="mt-2 text-4xl text-parchment"
             style={{ fontFamily: "var(--font-display)" }}
           >
             Programs Offered
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-charcoal/70">
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-parchment/70">
             Flight, technical, and academic programs recognized by the
             relevant Philippine government authorities. All programs are
             subject to the regulatory guidelines of their approving body.

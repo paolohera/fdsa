@@ -24,7 +24,7 @@ export default async function NewsDetailPage({
 
   return (
     <article>
-      {post.image_url && (
+      {post.image_url ? (
         <div className="relative aspect-[21/9] w-full overflow-hidden bg-ink/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -33,6 +33,13 @@ export default async function NewsDetailPage({
             className="h-full w-full object-cover"
           />
         </div>
+      ) : (
+        // No image — the fixed header floats over the (21/9) image above in
+        // the other branch, but with no image there's nothing for it to
+        // float over, so this spacer clears the header instead. Heights
+        // match the pt-* header-clearance values used on About/Programs/
+        // Facilities/News list (h-28/32/40 = pt-28/32/40 in px).
+        <div className="h-28 sm:h-32 lg:h-40" aria-hidden="true" />
       )}
 
       <div className="mx-auto max-w-2xl px-6 py-16">

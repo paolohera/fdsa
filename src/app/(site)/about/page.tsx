@@ -89,8 +89,20 @@ const placeholderBg =
 export default function AboutPage() {
   return (
     <div>
-      <section className="border-b border-ink/10 bg-paper">
-        <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+      <section className="relative overflow-hidden bg-ink">
+        {/* Background photo — swap the path below for a campus/building shot.
+            Reuses the same cover/center treatment as the homepage hero. */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url(/about-hero.jpg)" }}
+        />
+        {/* Navy/brand overlay so white heading text stays legible over any photo */}
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/90 via-ink/80 to-ink/95" />
+
+        {/* pt-* clears the fixed header (h-14 mobile / h-16 md / h-[80px] lg,
+            plus the 2px brass border) with room to spare so the heading
+            never sits under the nav bar or the overlapping crest. */}
+        <div className="relative mx-auto max-w-3xl px-6 pt-28 pb-16 text-center sm:pt-32 sm:pb-20 lg:pt-40">
           <p
             className="text-xs font-semibold uppercase tracking-[0.3em] text-brass"
             style={{ fontFamily: "var(--font-display)" }}
@@ -98,7 +110,7 @@ export default function AboutPage() {
             About FDSA
           </p>
           <h1
-            className="mt-2 text-4xl text-ink"
+            className="mt-2 text-4xl text-parchment"
             style={{ fontFamily: "var(--font-display)" }}
           >
             History &amp; Heritage
