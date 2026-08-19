@@ -17,6 +17,16 @@ function randomFileName(originalName: string) {
   return `${crypto.randomUUID()}.${ext}`;
 }
 
+// A <input type="datetime-local"> submits "YYYY-MM-DDTHH:mm" with no timezone,
+// interpreted as the browser's local time. new Date() on that string parses it
+// as local time too, and toISOString() converts it correctly to UTC for storage.
+function parseLocalDatetime(value: FormDataEntryValue | null): string | undefined {
+  if (!value || typeof value !== "string" || value.trim() === "") return undefined;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return undefined;
+  return d.toISOString();
+}
+
 export async function createPost(formData: FormData) {
   const supabase = await createClient();
   const {
@@ -28,6 +38,7 @@ export async function createPost(formData: FormData) {
   const location = (formData.get("location") as string) || null;
   const published = formData.get("published") === "on";
   const imageFile = formData.get("image") as File | null;
+  const createdAt = parseLocalDatetime(formData.get("created_at"));
 
   let imageUrl: string | null = null;
   let storagePath: string | null = null;
@@ -59,6 +70,7 @@ export async function createPost(formData: FormData) {
     author_id: user?.id,
     image_url: imageUrl,
     storage_path: storagePath,
+    ...(createdAt ? { created_at: createdAt } : {}),
   });
 
   if (error) {
@@ -79,6 +91,7 @@ export async function updatePost(id: string, formData: FormData) {
   const location = (formData.get("location") as string) || null;
   const published = formData.get("published") === "on";
   const imageFile = formData.get("image") as File | null;
+  const createdAt = parseLocalDatetime(formData.get("created_at"));
 
   const updates: Record<string, unknown> = {
     title,
@@ -87,6 +100,10 @@ export async function updatePost(id: string, formData: FormData) {
     location,
     published,
   };
+
+  if (createdAt) {
+    updates.created_at = createdAt;
+  }
 
   if (imageFile && imageFile.size > 0) {
     const { data: existing } = await supabase

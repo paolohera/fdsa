@@ -3,6 +3,7 @@ import {
   Newspaper,
   GalleryHorizontal,
   Image as ImageIcon,
+  Clock,
   Mail,
   SquarePlus,
   Images,
@@ -21,12 +22,14 @@ export default async function AdminDashboard() {
     { count: newsCount },
     { count: heroCount },
     { data: aboutImage },
+    { count: timelineCount },
     { data: recentPosts },
     { count: unreadMessages },
   ] = await Promise.all([
     supabase.from("news_posts").select("*", { count: "exact", head: true }),
     supabase.from("hero_slides").select("*", { count: "exact", head: true }),
     supabase.from("about_image").select("id").maybeSingle(),
+    supabase.from("timeline_entries").select("*", { count: "exact", head: true }),
     supabase
       .from("news_posts")
       .select("id, title, published, created_at")
@@ -58,6 +61,12 @@ export default async function AdminDashboard() {
       icon: ImageIcon,
     },
     {
+      label: "Timeline entries",
+      value: timelineCount ?? 0,
+      href: "/admin/about/timeline",
+      icon: Clock,
+    },
+    {
       label: "New messages",
       value: unreadMessages ?? 0,
       href: "/admin/messages",
@@ -68,7 +77,7 @@ export default async function AdminDashboard() {
   const quickActions = [
     { label: "Draft New Post", href: "/admin/news/new", icon: SquarePlus },
     { label: "Update Carousel", href: "/admin/hero/new", icon: Images },
-    { label: "Manage About Image", href: "/admin/about", icon: ImageIcon },
+    { label: "Edit Timeline", href: "/admin/about/timeline", icon: Clock },
     { label: "View Messages", href: "/admin/messages", icon: Mail },
   ];
 
@@ -80,7 +89,7 @@ export default async function AdminDashboard() {
       />
 
       {/* Stat cards */}
-      <div className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
             <AdminCard className="group relative p-6 hover:border-brass/50">

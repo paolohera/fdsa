@@ -5,6 +5,9 @@ import {
   Newspaper,
   GalleryHorizontal,
   Image as ImageIcon,
+  Clock,
+  Compass,
+  Gem,
   Mail,
   LogOut,
   SquareArrowOutUpRight,
@@ -67,11 +70,26 @@ export default async function AdminLayout({
           </p>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-6">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-6">
           <AdminNavLink href="/admin" label="Dashboard" icon={<LayoutDashboard size={17} strokeWidth={2} />} />
           <AdminNavLink href="/admin/news" label="News Management" icon={<Newspaper size={17} strokeWidth={2} />} />
           <AdminNavLink href="/admin/hero" label="Hero Carousel" icon={<GalleryHorizontal size={17} strokeWidth={2} />} />
+
+          <p className="px-3 pt-5 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-parchment/30">
+            About Page
+          </p>
           <AdminNavLink href="/admin/about" label="About Image" icon={<ImageIcon size={17} strokeWidth={2} />} />
+          <AdminNavLink href="/admin/about/timeline" label="Timeline" icon={<Clock size={17} strokeWidth={2} />} />
+          <AdminNavLink
+            href="/admin/about/vision-mission"
+            label="Vision & Mission"
+            icon={<Compass size={17} strokeWidth={2} />}
+          />
+          <AdminNavLink href="/admin/about/values" label="Core Values" icon={<Gem size={17} strokeWidth={2} />} />
+
+          <p className="px-3 pt-5 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-parchment/30">
+            Site
+          </p>
           <AdminNavLink
             href="/admin/messages"
             label="Messages"

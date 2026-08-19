@@ -12,11 +12,24 @@ type PostFormProps = {
     published: boolean;
     image_url?: string | null;
     location?: string | null;
+    created_at?: string | null;
   };
   error?: string;
 };
 
 const EXCERPT_TARGET = 200;
+
+// Converts an ISO timestamp into the "YYYY-MM-DDTHH:mm" format a
+// <input type="datetime-local"> expects, in the browser's local time.
+function toDatetimeLocal(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
 
 export default function PostForm({ action, defaultValues, error }: PostFormProps) {
   const [body, setBody] = useState(defaultValues?.body ?? "");
@@ -99,6 +112,19 @@ export default function PostForm({ action, defaultValues, error }: PostFormProps
                 />
                 <span className="h-6 w-11 rounded-full bg-ink/15 transition-colors peer-checked:bg-brass" />
                 <span className="absolute left-1 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+              </span>
+            </label>
+
+            <label className="mt-4 block">
+              <span className="text-sm text-ink">Post date &amp; time</span>
+              <input
+                name="created_at"
+                type="datetime-local"
+                defaultValue={toDatetimeLocal(defaultValues?.created_at)}
+                className="mt-1.5 w-full rounded-md border border-ink/15 px-2.5 py-1.5 text-sm text-ink outline-none focus:border-brass"
+              />
+              <span className="mt-1 block text-xs text-charcoal/40">
+                Controls the date shown on the post and its sort order.
               </span>
             </label>
 

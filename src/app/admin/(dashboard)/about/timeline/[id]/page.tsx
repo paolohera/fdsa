@@ -2,10 +2,10 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import PostForm from "../post-form";
-import { updatePost } from "../actions";
+import TimelineForm from "../timeline-form";
+import { updateTimelineEntry } from "../actions";
 
-export default async function EditPostPage({
+export default async function EditTimelineEntryPage({
   params,
   searchParams,
 }: {
@@ -16,26 +16,26 @@ export default async function EditPostPage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const { data: post } = await supabase
-    .from("news_posts")
-    .select("title, body, published, image_url, location, created_at")
+  const { data: entry } = await supabase
+    .from("timeline_entries")
+    .select("year, title, body, image_url")
     .eq("id", id)
     .single();
 
-  if (!post) notFound();
+  if (!entry) notFound();
 
-  const updatePostWithId = updatePost.bind(null, id);
+  const updateEntryWithId = updateTimelineEntry.bind(null, id);
 
   return (
     <div>
       <Link
-        href="/admin/news"
+        href="/admin/about/timeline"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-charcoal/60 hover:text-ink"
       >
         <ArrowLeft size={15} />
-        Back to news
+        Back to timeline
       </Link>
-      <PostForm action={updatePostWithId} defaultValues={post} error={error} />
+      <TimelineForm action={updateEntryWithId} defaultValues={entry} error={error} />
     </div>
   );
 }
