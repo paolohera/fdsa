@@ -9,6 +9,7 @@ import {
   Compass,
   Gem,
   Mail,
+  MessageCircle,
   LogOut,
   SquareArrowOutUpRight,
   Plus,
@@ -54,6 +55,11 @@ export default async function AdminLayout({
     .select("*", { count: "exact", head: true })
     .eq("read", false);
 
+  const { count: openChats } = await supabase
+    .from("chat_conversations")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "open");
+
   return (
     <div className="min-h-screen bg-parchment">
       {/* Sidebar */}
@@ -95,6 +101,12 @@ export default async function AdminLayout({
             label="Messages"
             icon={<Mail size={17} strokeWidth={2} />}
             badge={unreadMessages ?? 0}
+          />
+          <AdminNavLink
+            href="/admin/live-chat"
+            label="Live Chat"
+            icon={<MessageCircle size={17} strokeWidth={2} />}
+            badge={openChats ?? 0}
           />
         </nav>
 

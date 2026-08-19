@@ -4,17 +4,20 @@ import { Mail, MapPin } from "lucide-react";
 import SecretLoginModal from "@/components/secret-login-modal";
 import SmoothScrollProvider from "@/components/smooth-scroll-provider";
 import SiteHeader from "@/components/site-header";
+import FloatingChat from "@/components/floating-chat/floating-chat";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {/* Header and modal live OUTSIDE SmoothScrollProvider deliberately —
-          a transformed ancestor (which ScrollSmoother applies on desktop)
-          breaks position:fixed for anything nested inside it, turning it
-          into position:absolute relative to that ancestor instead. Both
-          need to be genuinely fixed to the real viewport. */}
+      {/* Header, modal, and chat widget live OUTSIDE SmoothScrollProvider
+          deliberately — a transformed ancestor (which ScrollSmoother
+          applies on desktop) breaks position:fixed for anything nested
+          inside it, turning it into position:absolute relative to that
+          ancestor instead. All three need to be genuinely fixed to the
+          real viewport. */}
       <SiteHeader />
       <SecretLoginModal />
+      <FloatingChat />
 
       <SmoothScrollProvider>
         <div className="flex min-h-screen flex-col">
