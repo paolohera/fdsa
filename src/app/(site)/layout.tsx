@@ -6,6 +6,12 @@ import SmoothScrollProvider from "@/components/smooth-scroll-provider";
 import SiteHeader from "@/components/site-header";
 import FloatingChat from "@/components/floating-chat/floating-chat";
 
+const accreditations = [
+  { src: "/logo/ched.png", alt: "Commission on Higher Education" },
+  { src: "/logo/caap.png", alt: "Civil Aviation Authority of the Philippines" },
+  { src: "/logo/kagawaran.png", alt: "Department of Education" },
+];
+
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -137,6 +143,29 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
                       flightdynamicsjdc@gmail.com
                     </a>
                   </div>
+                </div>
+              </div>
+
+              {/* Accreditations */}
+              <div className="mt-12 flex flex-col items-center gap-4 border-t border-parchment/10 pt-8 sm:flex-row sm:justify-between">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brass">
+                  Accredited By
+                </p>
+                <div className="flex items-center gap-5">
+                  {accreditations.map((logo) => (
+                    <div
+                      key={logo.src}
+                      className="flex h-16 w-16 items-center justify-center rounded-full bg-parchment/95 p-2 shadow-sm sm:h-20 sm:w-20"
+                    >
+                      <Image
+                        src={logo.src}
+                        alt={logo.alt}
+                        width={72}
+                        height={72}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

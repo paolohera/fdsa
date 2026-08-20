@@ -7,6 +7,27 @@ import NewsCard from "@/components/news-card";
 
 export const revalidate = 60; // re-check for new published posts every 60s
 
+// One flagship program per academic track — a homepage teaser, not the
+// full catalog. The complete list lives on /programs.
+const featuredPrograms = [
+  {
+    code: "BAMT",
+    track: "Baccalaureate",
+    name: "Bachelor in Aircraft Maintenance Technology",
+    description:
+      "A four-year degree preparing students for licensure and careers maintaining aircraft airframes, powerplants, and systems.",
+    imageSrc: undefined as string | undefined, // e.g. "/bamt.jpg" once ready
+  },
+  {
+    code: "AET",
+    track: "Two-Year Technical",
+    name: "Aviation Electronics Technology",
+    description:
+      "Technical training in aircraft electronics, instrumentation, and communication systems.",
+    imageSrc: undefined as string | undefined, // e.g. "/aet.jpg" once ready
+  },
+];
+
 export default async function HomePage() {
   const supabase = await createClient();
 
@@ -29,30 +50,52 @@ export default async function HomePage() {
 
       {/* About preview */}
       <section className="border-y border-ink/10 bg-paper">
-        <div className="mx-auto grid max-w-5xl gap-10 px-6 py-16 sm:grid-cols-2 sm:items-center">
-          {aboutImage ? (
-            <ScrollReveal x={-60} y={0}>
-              <div className="w-full overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={aboutImage.image_url}
-                  alt="FDSA students"
-                  className="h-auto w-full object-contain"
-                />
-              </div>
-            </ScrollReveal>
-          ) : (
-            <ScrollReveal x={-60} y={0}>
-              <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 border border-dashed border-ink/25 bg-ink/5 text-center">
-                <span className="text-xs uppercase tracking-widest text-charcoal/40">
-                  Student photo placeholder
+        <div className="mx-auto grid max-w-5xl gap-12 px-6 py-20 sm:grid-cols-2 sm:items-center sm:gap-16">
+          <ScrollReveal x={-60} y={0}>
+            <div className="relative">
+              {/* Corner brackets — an instrument-panel framing device that nods
+                  to the aviation subject without leaning on a stock icon. */}
+              <span className="pointer-events-none absolute -left-3 -top-3 h-8 w-8 border-l-2 border-t-2 border-brass sm:-left-4 sm:-top-4" />
+              <span className="pointer-events-none absolute -bottom-3 -right-3 h-8 w-8 border-b-2 border-r-2 border-brass sm:-bottom-4 sm:-right-4" />
+
+              {aboutImage ? (
+                <div className="aspect-[4/3] w-full overflow-hidden bg-ink/5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={aboutImage.image_url}
+                    alt="FDSA students"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 border border-dashed border-ink/25 bg-ink/5 text-center">
+                  <span className="text-xs uppercase tracking-widest text-charcoal/40">
+                    Student photo placeholder
+                  </span>
+                  <span className="text-[11px] text-charcoal/30">
+                    Add one from /admin/about
+                  </span>
+                </div>
+              )}
+
+              {/* Founding-year badge — a stamped ID-tag treatment echoing the
+                  brass/ink crest elsewhere on the site. */}
+              <div
+                className="absolute -bottom-6 -right-2 flex h-24 w-24 rotate-[-6deg] flex-col items-center justify-center rounded-full border-2 border-brass bg-ink text-center shadow-lg sm:-right-6"
+                aria-hidden="true"
+              >
+                <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-brass">
+                  Est.
                 </span>
-                <span className="text-[11px] text-charcoal/30">
-                  Add one from /admin/about
+                <span
+                  className="text-xl leading-none text-parchment"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  1988
                 </span>
               </div>
-            </ScrollReveal>
-          )}
+            </div>
+          </ScrollReveal>
 
           <ScrollReveal x={60} y={0} delay={0.15}>
             <div>
@@ -63,7 +106,7 @@ export default async function HomePage() {
                 About FDSA
               </p>
               <h3
-                className="mt-2 text-3xl text-ink"
+                className="mt-2 text-3xl leading-tight text-ink sm:text-4xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
                 Training aviation professionals since 1988.
@@ -75,14 +118,107 @@ export default async function HomePage() {
                 avionics, and aviation business — guided by faith, duty,
                 service, and accountability.
               </p>
+
               <Link
                 href="/about"
-                className="mt-6 inline-block border border-ink px-6 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment"
+                className="group mt-7 inline-flex items-center gap-2 border border-ink px-6 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment"
               >
                 More About Us
+                <span className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
             </div>
           </ScrollReveal>
+        </div>
+      </section>
+
+      {/* What we offer */}
+      <section className="mx-auto max-w-5xl px-6 py-16">
+        <ScrollReveal>
+          <div className="border-b border-ink/20 pb-3">
+            <p
+              className="text-xs font-semibold uppercase tracking-[0.3em] text-brass"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Academics
+            </p>
+            <h3
+              className="mt-1 text-2xl text-ink"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              What We Offer
+            </h3>
+          </div>
+        </ScrollReveal>
+
+        <ScrollStagger className="divide-y divide-ink/10">
+          {featuredPrograms.map((program) => (
+            <Link
+              key={program.code}
+              href="/programs"
+              className="group -mx-4 grid grid-cols-1 gap-4 px-4 py-9 transition hover:bg-ink/[0.03] sm:grid-cols-12 sm:items-center sm:gap-6"
+            >
+              <div className="sm:col-span-3">
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-ink/5">
+                  {program.imageSrc ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={program.imageSrc}
+                      alt={program.name}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-1 border border-dashed border-ink/25 text-center">
+                      <span className="text-[10px] uppercase tracking-widest text-charcoal/40">
+                        Photo placeholder
+                      </span>
+                      <span className="text-[9px] text-charcoal/30">{program.code}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="sm:col-span-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-brass">
+                  {program.track}
+                </p>
+                <p
+                  className="mt-1 text-3xl leading-none text-ink transition-colors group-hover:text-brass sm:text-4xl"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  {program.code}
+                </p>
+              </div>
+
+              <div className="sm:col-span-4">
+                <h4
+                  className="text-lg leading-snug text-ink"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  {program.name}
+                </h4>
+                <p className="mt-1.5 text-sm leading-6 text-charcoal/70">
+                  {program.description}
+                </p>
+              </div>
+
+              <div className="sm:col-span-2 sm:text-right">
+                <span className="inline-flex items-center gap-1.5 text-sm text-ink transition-all group-hover:gap-2.5 group-hover:text-brass">
+                  Learn more
+                  <span aria-hidden="true">→</span>
+                </span>
+              </div>
+            </Link>
+          ))}
+        </ScrollStagger>
+
+        <div className="mt-10 text-center">
+          <Link
+            href="/programs"
+            className="group inline-flex items-center gap-2 border border-ink px-6 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment"
+          >
+            View More Programs
+            <span className="transition-transform group-hover:translate-x-1">→</span>
+          </Link>
         </div>
       </section>
 
