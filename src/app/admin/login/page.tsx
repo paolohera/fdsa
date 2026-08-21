@@ -1,3 +1,4 @@
+import TurnstileWidget from "@/components/turnstile-widget";
 import { login } from "./actions";
 
 export default async function LoginPage({
@@ -63,6 +64,8 @@ export default async function LoginPage({
               className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none placeholder:text-parchment/30 focus:border-brass focus:ring-1 focus:ring-brass"
             />
           </div>
+
+          <TurnstileWidget theme="dark" />
 
           <button
             type="submit"

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginModal } from "@/app/admin/login/actions";
+import TurnstileWidget from "@/components/turnstile-widget";
 
 const TRIGGER_PRESSES = 3;
 const TRIGGER_WINDOW_MS = 1200;
@@ -160,6 +161,8 @@ export default function SecretLoginModal() {
               className="w-full border-0 border-b border-ink/20 bg-transparent px-0 py-1.5 text-sm text-ink outline-none transition focus:border-brass"
             />
           </div>
+
+          <TurnstileWidget />
 
           <button
             type="submit"

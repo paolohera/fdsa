@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { submitContactMessage, type ContactFormState } from "@/app/(site)/contact/actions";
+import TurnstileWidget from "@/components/turnstile-widget";
 
 const initialState: ContactFormState = { status: "idle", message: "" };
 
@@ -71,6 +72,8 @@ export default function ContactForm() {
           className="mt-1.5 w-full resize-none border border-ink/20 bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-brass"
         />
       </div>
+
+      <TurnstileWidget />
 
       <button
         type="submit"
