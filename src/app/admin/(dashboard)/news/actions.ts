@@ -4,6 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
+const VALID_PRIORITIES = ["normal", "featured", "pinned"] as const;
+type Priority = (typeof VALID_PRIORITIES)[number];
+
+function normalizePriority(value: FormDataEntryValue | null): Priority {
+  return VALID_PRIORITIES.includes(value as Priority) ? (value as Priority) : "normal";
+}
+
 function slugify(title: string) {
   return title
     .toLowerCase()
@@ -17,9 +24,6 @@ function randomFileName(originalName: string) {
   return `${crypto.randomUUID()}.${ext}`;
 }
 
-// A <input type="datetime-local"> submits "YYYY-MM-DDTHH:mm" with no timezone,
-// interpreted as the browser's local time. new Date() on that string parses it
-// as local time too, and toISOString() converts it correctly to UTC for storage.
 function parseLocalDatetime(value: FormDataEntryValue | null): string | undefined {
   if (!value || typeof value !== "string" || value.trim() === "") return undefined;
   const d = new Date(value);
@@ -37,6 +41,7 @@ export async function createPost(formData: FormData) {
   const body = formData.get("body") as string;
   const location = (formData.get("location") as string) || null;
   const published = formData.get("published") === "on";
+  const priority = normalizePriority(formData.get("priority"));
   const imageFile = formData.get("image") as File | null;
   const createdAt = parseLocalDatetime(formData.get("created_at"));
 
@@ -67,6 +72,7 @@ export async function createPost(formData: FormData) {
     body,
     location,
     published,
+    priority,
     author_id: user?.id,
     image_url: imageUrl,
     storage_path: storagePath,
@@ -90,6 +96,7 @@ export async function updatePost(id: string, formData: FormData) {
   const body = formData.get("body") as string;
   const location = (formData.get("location") as string) || null;
   const published = formData.get("published") === "on";
+  const priority = normalizePriority(formData.get("priority"));
   const imageFile = formData.get("image") as File | null;
   const createdAt = parseLocalDatetime(formData.get("created_at"));
 
@@ -99,6 +106,7 @@ export async function updatePost(id: string, formData: FormData) {
     body,
     location,
     published,
+    priority,
   };
 
   if (createdAt) {
@@ -143,6 +151,20 @@ export async function updatePost(id: string, formData: FormData) {
   revalidatePath("/");
   revalidatePath("/news");
   redirect("/admin/news");
+}
+
+// Quick pin/feature toggle used directly from the news list row — no need
+// to open the full edit form just to change priority.
+export async function setPostPriority(id: string, priority: Priority) {
+  const supabase = await createClient();
+  await supabase
+    .from("news_posts")
+    .update({ priority: VALID_PRIORITIES.includes(priority) ? priority : "normal" })
+    .eq("id", id);
+
+  revalidatePath("/admin/news");
+  revalidatePath("/");
+  revalidatePath("/news");
 }
 
 export async function removePostImage(id: string, storagePath: string | null) {

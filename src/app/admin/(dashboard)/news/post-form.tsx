@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ImagePlus, MapPin } from "lucide-react";
+import { ImagePlus, MapPin, Pin, Star } from "lucide-react";
 import { AdminCard, AdminButton, AdminBadge } from "@/components/admin/admin-ui";
+
+type Priority = "normal" | "featured" | "pinned";
 
 type PostFormProps = {
   action: (formData: FormData) => void;
@@ -10,6 +12,7 @@ type PostFormProps = {
     title: string;
     body: string;
     published: boolean;
+    priority?: Priority | null;
     image_url?: string | null;
     location?: string | null;
     created_at?: string | null;
@@ -19,8 +22,6 @@ type PostFormProps = {
 
 const EXCERPT_TARGET = 200;
 
-// Converts an ISO timestamp into the "YYYY-MM-DDTHH:mm" format a
-// <input type="datetime-local"> expects, in the browser's local time.
 function toDatetimeLocal(iso?: string | null) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -31,9 +32,16 @@ function toDatetimeLocal(iso?: string | null) {
   )}:${pad(d.getMinutes())}`;
 }
 
+const PRIORITY_OPTIONS: { value: Priority; label: string; description: string }[] = [
+  { value: "normal", label: "Normal", description: "Standard post, sorted by date." },
+  { value: "featured", label: "Featured", description: "Shows on the homepage hero." },
+  { value: "pinned", label: "Pinned", description: "Stays at the top of the news list." },
+];
+
 export default function PostForm({ action, defaultValues, error }: PostFormProps) {
   const [body, setBody] = useState(defaultValues?.body ?? "");
   const [published, setPublished] = useState(defaultValues?.published ?? false);
+  const [priority, setPriority] = useState<Priority>(defaultValues?.priority ?? "normal");
   const [preview, setPreview] = useState<string | null>(defaultValues?.image_url ?? null);
 
   return (
@@ -131,6 +139,43 @@ export default function PostForm({ action, defaultValues, error }: PostFormProps
             <AdminButton type="submit" className="mt-5 w-full justify-center">
               Save
             </AdminButton>
+          </AdminCard>
+
+          <AdminCard className="p-5">
+            <h3 className="border-b border-ink/10 pb-3 text-sm font-semibold uppercase tracking-wide text-ink">
+              Priority
+            </h3>
+            <div className="mt-4 space-y-2">
+              {PRIORITY_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className={`flex cursor-pointer items-start gap-3 border p-3 transition ${
+                    priority === opt.value
+                      ? "border-brass bg-brass/5"
+                      : "border-ink/10 hover:border-ink/25"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="priority"
+                    value={opt.value}
+                    checked={priority === opt.value}
+                    onChange={() => setPriority(opt.value)}
+                    className="mt-0.5 accent-brass"
+                  />
+                  <span>
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
+                      {opt.value === "pinned" && <Pin size={13} className="text-brass" />}
+                      {opt.value === "featured" && <Star size={13} className="text-brass" />}
+                      {opt.label}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-charcoal/50">
+                      {opt.description}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
           </AdminCard>
 
           <AdminCard className="p-5">

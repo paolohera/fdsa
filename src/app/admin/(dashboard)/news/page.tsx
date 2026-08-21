@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pin, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { deletePost } from "./actions";
+import { deletePost, setPostPriority } from "./actions";
+import { sortByPriority } from "@/lib/news-priority";
 import {
   AdminPageHeader,
   AdminCard,
@@ -22,20 +23,21 @@ export default async function NewsListPage({
 
   let query = supabase
     .from("news_posts")
-    .select("id, title, published, created_at, image_url")
+    .select("id, title, published, priority, created_at, image_url")
     .order("created_at", { ascending: false });
 
   if (q) {
     query = query.ilike("title", `%${q}%`);
   }
 
-  const { data: posts, error } = await query;
+  const { data: rawPosts, error } = await query;
+  const posts = rawPosts ? sortByPriority(rawPosts) : rawPosts;
 
   return (
     <div>
       <AdminPageHeader
         title="News posts"
-        description="Articles shown on the homepage and /news."
+        description="Articles shown on the homepage and /news. Pin a post to keep it at the top of the list, or feature one to show it on the homepage hero."
         action={
           <AdminLinkButton href="/admin/news/new">
             <Plus size={16} /> New post
@@ -89,14 +91,47 @@ export default async function NewsListPage({
                 >
                   {post.title}
                 </Link>
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-1 flex flex-wrap items-center gap-2">
                   <AdminBadge tone={post.published ? "green" : "slate"}>
                     {post.published ? "Published" : "Draft"}
                   </AdminBadge>
+                  {post.priority === "pinned" && (
+                    <AdminBadge tone="brass">
+                      <Pin size={11} className="mr-1 inline" />
+                      Pinned
+                    </AdminBadge>
+                  )}
+                  {post.priority === "featured" && (
+                    <AdminBadge tone="brass">
+                      <Star size={11} className="mr-1 inline" />
+                      Featured
+                    </AdminBadge>
+                  )}
                   <span className="text-xs text-charcoal/40">
                     {new Date(post.created_at).toLocaleDateString()}
                   </span>
                 </div>
+              </div>
+
+              {/* Quick priority toggles — jump straight to pinned/featured/normal
+                  without opening the edit form. */}
+              <div className="hidden items-center gap-1 sm:flex">
+                <form action={setPostPriority.bind(null, post.id, post.priority === "pinned" ? "normal" : "pinned")}>
+                  <AdminButton
+                    variant={post.priority === "pinned" ? "primary" : "ghost"}
+                    title={post.priority === "pinned" ? "Unpin" : "Pin to top"}
+                  >
+                    <Pin size={14} />
+                  </AdminButton>
+                </form>
+                <form action={setPostPriority.bind(null, post.id, post.priority === "featured" ? "normal" : "featured")}>
+                  <AdminButton
+                    variant={post.priority === "featured" ? "primary" : "ghost"}
+                    title={post.priority === "featured" ? "Unfeature" : "Feature on hero"}
+                  >
+                    <Star size={14} />
+                  </AdminButton>
+                </form>
               </div>
 
               <form action={deletePost.bind(null, post.id)}>

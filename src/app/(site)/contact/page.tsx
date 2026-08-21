@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import { Mail, MapPin } from "lucide-react";
 import ScrollReveal from "@/components/scroll-reveal";
 import ContactForm from "@/components/contact-form";
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Reach FDSA for admissions, program, or campus visit inquiries. Located at Mactan-Cebu International Airport, Lapu-Lapu City, Cebu, Philippines.",
+  alternates: { canonical: "/contact" },
+};
 
 export default function ContactPage() {
   return (

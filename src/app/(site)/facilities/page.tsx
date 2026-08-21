@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ScrollReveal from "@/components/scroll-reveal";
 import ScrollStagger from "@/components/scroll-stagger";
 import { facilities } from "@/lib/facilities-data";
+
+export const metadata: Metadata = {
+  title: "Facilities",
+  description:
+    "Explore FDSA's hangars, labs, and learning spaces at the Mactan-Cebu International Airport campus, built for hands-on aviation training.",
+  alternates: { canonical: "/facilities" },
+};
 
 // Same dark brass-texture placeholder used across the site (News cards,
 // Core Values, Programs) — keeps the "photo not uploaded yet" look

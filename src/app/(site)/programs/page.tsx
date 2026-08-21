@@ -1,5 +1,13 @@
+import type { Metadata } from "next";
 import ScrollReveal from "@/components/scroll-reveal";
 import ScrollStagger from "@/components/scroll-stagger";
+
+export const metadata: Metadata = {
+  title: "Programs Offered",
+  description:
+    "Explore FDSA's Baccalaureate, Two-Year Technical, and Senior High School programs — including Aircraft Maintenance Technology and Aviation Electronics Technology, recognized by CHED, CAAP, and DepEd.",
+  alternates: { canonical: "/programs" },
+};
 
 const programGroups = [
   {

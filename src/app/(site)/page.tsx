@@ -4,6 +4,7 @@ import HeroSection from "@/components/hero-section";
 import ScrollReveal from "@/components/scroll-reveal";
 import ScrollStagger from "@/components/scroll-stagger";
 import NewsCard from "@/components/news-card";
+import { sortByPriority } from "@/lib/news-priority";
 
 export const revalidate = 60; // re-check for new published posts every 60s
 
@@ -31,12 +32,14 @@ const featuredPrograms = [
 export default async function HomePage() {
   const supabase = await createClient();
 
-  const { data: posts } = await supabase
+  const { data: rawPosts } = await supabase
     .from("news_posts")
-    .select("id, title, slug, body, created_at, image_url, location")
+    .select("id, title, slug, body, created_at, image_url, location, priority")
     .eq("published", true)
     .order("created_at", { ascending: false })
-    .limit(3);
+    .limit(6); // pull a few extra since pinned/featured may push order around
+
+  const posts = rawPosts ? sortByPriority(rawPosts).slice(0, 3) : rawPosts;
 
   const { data: aboutImage } = await supabase
     .from("about_image")
@@ -245,7 +248,7 @@ export default async function HomePage() {
         )}
 
         <ScrollStagger className="mt-8 grid grid-cols-1 gap-4 sm:grid-flow-row-dense sm:grid-cols-3 sm:auto-rows-[220px]">
-          {posts?.map((post, index) => (
+          {posts?.map((post) => (
             <NewsCard
               key={post.id}
               slug={post.slug}
@@ -254,7 +257,7 @@ export default async function HomePage() {
               createdAt={post.created_at}
               imageUrl={post.image_url}
               location={post.location}
-              featured={index % 3 === 0}
+              featured={post.priority === "featured"}
             />
           ))}
         </ScrollStagger>

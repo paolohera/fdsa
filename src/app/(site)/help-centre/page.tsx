@@ -1,9 +1,14 @@
-"use client";
-
-import { useState } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
 import ScrollReveal from "@/components/scroll-reveal";
+import AccordionItem from "./faq-accordion";
+
+export const metadata: Metadata = {
+  title: "Help Centre",
+  description:
+    "Answers to common questions about admissions, programs, and campus life at Flight Dynamics School of Aeronautics.",
+  alternates: { canonical: "/help-centre" },
+};
 
 type FaqItem = {
   question: string;
@@ -68,46 +73,31 @@ const faqGroups: FaqGroup[] = [
   },
 ];
 
-function AccordionItem({ item }: { item: FaqItem }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="border-b border-ink/10">
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between gap-4 py-4 text-left"
-      >
-        <span
-          className="text-sm font-semibold text-ink sm:text-base"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          {item.question}
-        </span>
-        <ChevronDown
-          size={18}
-          className={`shrink-0 text-brass transition-transform duration-300 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      <div
-        className={`grid overflow-hidden transition-all duration-300 ease-out ${
-          open ? "grid-rows-[1fr] pb-4 opacity-100" : "grid-rows-[0fr] opacity-0"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <p className="text-sm leading-6 text-charcoal/75">{item.answer}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
+// FAQPage structured data — enables Google to show expandable FAQ rich
+// results directly in search, which is a strong click-through booster.
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqGroups.flatMap((group) =>
+    group.items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    }))
+  ),
+};
 
 export default function HelpCentrePage() {
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+
       <section className="relative overflow-hidden bg-ink">
         {/* Background photo — swap the path below for a relevant campus photo. */}
         <div

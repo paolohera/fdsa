@@ -1,7 +1,15 @@
+import type { Metadata } from "next";
 import StoryChapter from "@/components/story-chapter";
 import ScrollReveal from "@/components/scroll-reveal";
 import ScrollStagger from "@/components/scroll-stagger";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description:
+    "Learn about FDSA's history since 1988, our vision, mission, and core values as an aviation school at Mactan-Cebu International Airport.",
+  alternates: { canonical: "/about" },
+};
 
 // Same dark brass-texture placeholder used on News cards without an
 // image — keeps the "not yet uploaded" look consistent across the site.

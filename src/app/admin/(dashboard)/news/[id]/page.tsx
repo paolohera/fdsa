@@ -18,7 +18,7 @@ export default async function EditPostPage({
 
   const { data: post } = await supabase
     .from("news_posts")
-    .select("title, body, published, image_url, location, created_at")
+    .select("title, body, published, priority, image_url, location, created_at")
     .eq("id", id)
     .single();
 
@@ -38,4 +38,4 @@ export default async function EditPostPage({
       <PostForm action={updatePostWithId} defaultValues={post} error={error} />
     </div>
   );
-}
+} 

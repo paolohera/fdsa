@@ -1,9 +1,59 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
 export const revalidate = 60;
+
+const SITE_URL = "https://www.fdsa.site";
+
+function excerpt(text: string, max: number) {
+  const clean = text.trim();
+  if (clean.length <= max) return clean;
+  return clean.slice(0, max).trimEnd() + "…";
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+
+  const { data: post } = await supabase
+    .from("news_posts")
+    .select("title, body, created_at, image_url")
+    .eq("slug", slug)
+    .eq("published", true)
+    .single();
+
+  if (!post) {
+    return { title: "News" };
+  }
+
+  const description = excerpt(post.body, 160);
+
+  return {
+    title: post.title,
+    description,
+    alternates: { canonical: `/news/${slug}` },
+    openGraph: {
+      type: "article",
+      title: post.title,
+      description,
+      publishedTime: post.created_at,
+      images: post.image_url ? [{ url: post.image_url }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: post.image_url ? [post.image_url] : undefined,
+    },
+  };
+}
 
 export default async function NewsDetailPage({
   params,
@@ -22,8 +72,34 @@ export default async function NewsDetailPage({
 
   if (!post) notFound();
 
+  // NewsArticle structured data — helps Google associate this page with
+  // your organization and can surface it in Top Stories / rich results.
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: post.title,
+    datePublished: post.created_at,
+    dateModified: post.created_at,
+    image: post.image_url ? [post.image_url] : undefined,
+    description: excerpt(post.body, 160),
+    mainEntityOfPage: `${SITE_URL}/news/${slug}`,
+    publisher: {
+      "@type": "EducationalOrganization",
+      name: "Flight Dynamics School of Aeronautics, Inc.",
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/fdsa-logo.png`,
+      },
+    },
+  };
+
   return (
     <article>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+
       {post.image_url ? (
         <div className="relative aspect-[21/9] w-full overflow-hidden bg-ink/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
