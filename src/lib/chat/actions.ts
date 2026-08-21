@@ -1,7 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { verifyTurnstile } from "@/lib/verify-turnstile";
+import { chatStartRatelimit, chatMessageRatelimit, getClientIp } from "@/lib/rate-limit";
 
 const MAX_MESSAGE_LENGTH = 1000;
 const RATE_LIMIT_WINDOW_MS = 30_000; // 30 seconds
@@ -47,12 +50,26 @@ async function checkAndApplyRateLimit(
 export async function startConversation(
   visitorId: string,
   visitorName: string,
-  honeypot: string
+  honeypot: string,
+  turnstileToken: string
 ): Promise<ActionResult & { conversationId?: string }> {
   // Honeypot: real visitors never see or fill this field. A filled value
   // means a bot is blindly submitting every field it finds.
   if (honeypot) {
     return { ok: false, error: "Something went wrong. Please try again." };
+  }
+
+  const headersList = await headers();
+  const ip = getClientIp(headersList);
+
+  const { success } = await chatStartRatelimit.limit(ip);
+  if (!success) {
+    return { ok: false, error: "Too many chats started. Please wait a bit and try again." };
+  }
+
+  const isHuman = await verifyTurnstile(turnstileToken, ip);
+  if (!isHuman) {
+    return { ok: false, error: "Verification failed. Please try again." };
   }
 
   const name = visitorName.trim().slice(0, 100);
@@ -87,6 +104,17 @@ export async function sendVisitorMessage(
 ): Promise<ActionResult> {
   if (honeypot) {
     return { ok: false, error: "Something went wrong. Please try again." };
+  }
+
+  const headersList = await headers();
+  const ip = getClientIp(headersList);
+
+  // IP-based backstop, layered on top of the per-visitor_id DB rate limit
+  // below — catches abuse that rotates visitor_id (e.g. clearing
+  // localStorage) but stays on the same connection.
+  const { success } = await chatMessageRatelimit.limit(ip);
+  if (!success) {
+    return { ok: false, error: "You're sending messages too quickly. Please slow down." };
   }
 
   const text = body.trim().slice(0, MAX_MESSAGE_LENGTH);

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { MessageCircle, X, Send } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { startConversation, sendVisitorMessage } from "@/lib/chat/actions";
+import TurnstileWidget from "@/components/turnstile-widget";
 
 type ChatMessage = {
   id: string;
@@ -126,11 +127,14 @@ export default function FloatingChat() {
     setVisible(false);
   }, [open]);
 
-  async function handleStart(e: React.FormEvent) {
+  async function handleStart(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
-    const result = await startConversation(visitorId, nameInput, honeypot);
+    const formData = new FormData(e.currentTarget);
+    const turnstileToken = (formData.get("turnstileToken") as string) ?? "";
+
+    const result = await startConversation(visitorId, nameInput, honeypot, turnstileToken);
 
     if (!result.ok) {
       setError(result.error);
@@ -231,6 +235,9 @@ export default function FloatingChat() {
                 aria-hidden="true"
                 className="absolute -left-[9999px] h-0 w-0 opacity-0"
               />
+              <div className="flex justify-center">
+                <TurnstileWidget />
+              </div>
               {error && <p className="text-xs text-red-600">{error}</p>}
               <button
                 type="submit"

@@ -30,6 +30,25 @@ export const contactRatelimit = new Ratelimit({
   analytics: true,
 });
 
+// Chat — starting a new conversation. IP-based, so clearing localStorage
+// to get a fresh visitor_id doesn't bypass this (unlike the existing
+// visitor_id-based ban system in chat/actions.ts, which this complements).
+export const chatStartRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, "10 m"), // 5 new conversations / 10 min / IP
+  prefix: "ratelimit:chat-start",
+  analytics: true,
+});
+
+// Chat — sending messages. A looser IP-based backstop layered on top of
+// the existing per-visitor_id DB rate limit/auto-ban.
+export const chatMessageRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, "60 s"), // 20 messages / minute / IP
+  prefix: "ratelimit:chat-message",
+  analytics: true,
+});
+
 // Vercel puts the real client IP in this header. Falls back to a generic
 // bucket if it's ever missing (e.g. local dev), so rate limiting doesn't
 // crash — it just becomes a shared bucket for all local requests.
