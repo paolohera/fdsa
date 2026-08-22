@@ -41,6 +41,11 @@ export default async function HomePage() {
 
   const posts = rawPosts ? sortByPriority(rawPosts).slice(0, 3) : rawPosts;
 
+  const { data: heroImage } = await supabase
+    .from("hero_image")
+    .select("image_url")
+    .maybeSingle();
+
   const { data: aboutImage } = await supabase
     .from("about_image")
     .select("image_url")
@@ -49,7 +54,8 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <HeroSection />
+          
+      <HeroSection imageUrl={heroImage?.image_url} />
 
       {/* About preview */}
       <section className="border-y border-ink/10 bg-paper">

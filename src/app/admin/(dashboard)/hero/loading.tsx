@@ -1,25 +1,14 @@
-import { Skeleton, SkeletonPageHeader, SkeletonListCard } from "@/components/admin/admin-ui";
+import { AdminCard, Skeleton, SkeletonPageHeader } from "@/components/admin/admin-ui";
 
 export default function HeroLoading() {
   return (
     <div>
-      <SkeletonPageHeader titleWidth="w-64" descriptionWidth="w-96" actionWidth="w-28" />
+      <SkeletonPageHeader titleWidth="w-64" descriptionWidth="w-96" />
 
-      <SkeletonListCard
-        rows={4}
-        renderRow={() => (
-          <>
-            <Skeleton className="h-4 w-5" />
-            <Skeleton className="h-14 w-14 shrink-0 rounded-full" />
-            <Skeleton className="h-4 flex-1" />
-            <div className="flex items-center gap-1">
-              {Array.from({ length: 4 }).map((_, j) => (
-                <Skeleton key={j} className="h-8 w-8" />
-              ))}
-            </div>
-          </>
-        )}
-      />
+      <AdminCard className="max-w-2xl p-6">
+        <Skeleton className="aspect-[16/7] w-full" />
+        <Skeleton className="mt-5 h-10 w-full" />
+      </AdminCard>
     </div>
   );
 }

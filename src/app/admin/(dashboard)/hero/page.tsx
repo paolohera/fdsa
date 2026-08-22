@@ -1,89 +1,70 @@
-import Image from "next/image";
-import Link from "next/link";
-import { Plus, Trash2, ArrowUp, ArrowDown, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { deleteSlide, moveSlide } from "./actions";
-import {
-  AdminPageHeader,
-  AdminCard,
-  AdminLinkButton,
-  AdminButton,
-  AdminEmptyState,
-} from "@/components/admin/admin-ui";
+import { updateHeroImage } from "./actions";
+import { AdminPageHeader, AdminCard, AdminButton } from "@/components/admin/admin-ui";
 
-export default async function HeroSlidesPage() {
+export default async function HeroImagePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   const supabase = await createClient();
 
-  const { data: slides } = await supabase
-    .from("hero_slides")
-    .select("id, image_url, title, storage_path, position")
-    .order("position", { ascending: true });
+  const { data: hero } = await supabase
+    .from("hero_image")
+    .select("image_url")
+    .maybeSingle();
 
   return (
     <div>
       <AdminPageHeader
-        title="Homepage hero slides"
-        description="Program spotlight slides shown on the homepage. Auto-advances every 3 seconds on the public site."
-        action={
-          <AdminLinkButton href="/admin/hero/new">
-            <Plus size={16} /> New slide
-          </AdminLinkButton>
-        }
+        title="Homepage hero image"
+        description="The full-width banner image shown at the top of the homepage."
       />
 
-      {(!slides || slides.length === 0) ? (
-        <AdminEmptyState>No slides yet. Create the first one.</AdminEmptyState>
-      ) : (
-        <AdminCard className="divide-y divide-ink/10">
-          {slides.map((slide, index) => (
-            <div key={slide.id} className="flex items-center gap-4 p-4">
-              <span className="w-5 text-center text-sm font-medium text-charcoal/40">
-                {index + 1}
-              </span>
-
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-ink/5">
-                <Image
-                  src={slide.image_url}
-                  alt={slide.title}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-              </div>
-
-              <Link
-                href={`/admin/hero/${slide.id}`}
-                className="flex-1 text-sm font-medium text-ink hover:underline"
-              >
-                {slide.title}
-              </Link>
-
-              <div className="flex items-center gap-1">
-                <form action={moveSlide.bind(null, slide.id, "up")}>
-                  <AdminButton variant="ghost" disabled={index === 0}>
-                    <ArrowUp size={15} />
-                  </AdminButton>
-                </form>
-                <form action={moveSlide.bind(null, slide.id, "down")}>
-                  <AdminButton variant="ghost" disabled={index === slides.length - 1}>
-                    <ArrowDown size={15} />
-                  </AdminButton>
-                </form>
-                <Link href={`/admin/hero/${slide.id}`}>
-                  <AdminButton variant="ghost" type="button">
-                    <Pencil size={15} />
-                  </AdminButton>
-                </Link>
-                <form action={deleteSlide.bind(null, slide.id, slide.storage_path)}>
-                  <AdminButton variant="danger">
-                    <Trash2 size={15} />
-                  </AdminButton>
-                </form>
-              </div>
-            </div>
-          ))}
-        </AdminCard>
+      {error && (
+        <p className="mb-4 max-w-lg rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </p>
       )}
+
+      <AdminCard className="max-w-2xl p-6">
+        <div className="relative aspect-[16/7] w-full overflow-hidden bg-ink/5">
+          {hero?.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={hero.image_url}
+              alt="Homepage hero"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-center">
+              <span className="text-xs uppercase tracking-widest text-charcoal/40">
+                No hero image set
+              </span>
+              <span className="text-[11px] text-charcoal/30">
+                Falls back to /hero-background.png on the live site
+              </span>
+            </div>
+          )}
+        </div>
+
+        <form action={updateHeroImage} className="mt-5 flex items-center gap-2">
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            required
+            className="flex-1 text-sm text-charcoal/60 file:mr-3 file:border-0 file:bg-ink/5 file:px-3 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-ink/10"
+          />
+          <AdminButton type="submit">
+            {hero?.image_url ? "Replace" : "Upload"}
+          </AdminButton>
+        </form>
+        <p className="mt-2 text-xs text-charcoal/40">
+          Recommend a wide landscape photo, at least 1920px wide.
+        </p>
+      </AdminCard>
     </div>
   );
 }
