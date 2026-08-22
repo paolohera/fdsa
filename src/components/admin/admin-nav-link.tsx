@@ -9,11 +9,19 @@ type AdminNavLinkProps = {
   label: string;
   icon: ReactNode;
   badge?: number;
+  /**
+   * Set true only for links that have genuine nested sub-routes (e.g.
+   * News Management -> /admin/news/new, /admin/news/[id]). Sibling routes
+   * that merely share a URL prefix (e.g. the About Page section) must NOT
+   * set this, or they'll falsely stay highlighted on their siblings' pages.
+   */
+  matchNested?: boolean;
 };
 
-export default function AdminNavLink({ href, label, icon, badge }: AdminNavLinkProps) {
+export default function AdminNavLink({ href, label, icon, badge, matchNested = false }: AdminNavLinkProps) {
   const pathname = usePathname();
-  const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+  const active =
+    pathname === href || (matchNested && pathname.startsWith(`${href}/`));
 
   return (
     <Link

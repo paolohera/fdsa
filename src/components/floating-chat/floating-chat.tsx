@@ -185,8 +185,10 @@ export default function FloatingChat() {
           {/* Header */}
           <div className="flex shrink-0 items-center justify-between bg-ink px-4 py-3 sm:rounded-t-2xl">
             <div className="flex items-center gap-2.5">
-              <div className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brass/20">
-                <Image src="/fdsa-logo.png" alt="FDSA" fill sizes="32px" quality={100} className="object-contain p-0.5" />
+              <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
+                <div className="h-full w-full overflow-hidden rounded-full bg-brass/20">
+                  <Image src="/icons/android-chrome-192x192.png" alt="FDSA" fill sizes="32px" quality={100} className="object-contain" />
+                </div>
                 <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-ink bg-emerald-400" />
               </div>
               <div className="min-w-0">

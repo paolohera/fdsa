@@ -12,10 +12,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .eq("published", true)
     .order("created_at", { ascending: false });
 
-  const staticRoutes: MetadataRoute.Sitemap = [
+   const staticRoutes: MetadataRoute.Sitemap = [
     { url: SITE_URL, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/about`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/programs`, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${SITE_URL}/programs/baccalaureate`, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${SITE_URL}/programs/two-year-technical`, changeFrequency: "monthly", priority: 0.85 },
+    { url: `${SITE_URL}/programs/senior-high-school`, changeFrequency: "monthly", priority: 0.85 },
     { url: `${SITE_URL}/facilities`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/news`, changeFrequency: "daily", priority: 0.8 },
     { url: `${SITE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },

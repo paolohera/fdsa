@@ -19,6 +19,7 @@ import { logout } from "../login/actions";
 import AdminNavLink from "@/components/admin/admin-nav-link";
 import AdminSearch from "@/components/admin/admin-search";
 import AdminTopbarTitle from "@/components/admin/admin-topbar-title";
+import AdminNotificationBell from "@/components/admin/admin-notification-bell";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,7 @@ export default async function AdminLayout({
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-6">
           <AdminNavLink href="/admin" label="Dashboard" icon={<LayoutDashboard size={17} strokeWidth={2} />} />
           <AdminNavLink href="/admin/news" label="News Management" icon={<Newspaper size={17} strokeWidth={2} />} />
-          <AdminNavLink href="/admin/hero" label="Hero Carousel" icon={<GalleryHorizontal size={17} strokeWidth={2} />} />
+          <AdminNavLink href="/admin/hero" label="Hero Section" icon={<GalleryHorizontal size={17} strokeWidth={2} />} />
 
           <p className="px-3 pt-5 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-parchment/30">
             About Page
@@ -163,6 +164,10 @@ export default async function AdminLayout({
             <AdminTopbarTitle />
             <AdminSearch />
           </div>
+          <AdminNotificationBell
+            initialUnreadMessages={unreadMessages ?? 0}
+            initialOpenChats={openChats ?? 0}
+          />
         </header>
 
         <main className="mt-16 flex-1 px-8 py-10 lg:px-12 lg:py-12">

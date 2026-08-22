@@ -4,29 +4,41 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import HeaderIntro from "@/components/header-intro";
 
-const NAV_LEFT = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/programs", label: "Programs" },
-  { href: "/facilities", label: "Facilities" },
+type NavLink = {
+  href: string;
+  label: string;
+  children?: { href: string; label: string }[];
+};
 
+const PROGRAM_TRACKS: NonNullable<NavLink["children"]> = [
+  { href: "/programs/baccalaureate", label: "Baccalaureate" },
+  { href: "/programs/two-year-technical", label: "Two-Year Technical" },
+  { href: "/programs/senior-high-school", label: "Senior High School" },
 ];
 
-const NAV_RIGHT = [
+const NAV_LEFT: NavLink[] = [
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
+  { href: "/programs", label: "Programs", children: PROGRAM_TRACKS },
+  { href: "/facilities", label: "Facilities" },
+];
+
+const NAV_RIGHT: NavLink[] = [
   { href: "/news", label: "News & Events" },
   { href: "/contact", label: "Contact" },
   { href: "/help-centre", label: "Help Centre" },
 ];
 
-const NAV_LINKS = [...NAV_LEFT, ...NAV_RIGHT];
+const NAV_LINKS: NavLink[] = [...NAV_LEFT, ...NAV_RIGHT];
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [programsOpen, setProgramsOpen] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -42,6 +54,12 @@ export default function SiteHeader() {
     return () => {
       document.body.style.overflow = "";
     };
+  }, [open]);
+
+  // Collapse the mobile Programs accordion whenever the drawer itself closes,
+  // so it doesn't stay expanded the next time the menu opens.
+  useEffect(() => {
+    if (!open) setProgramsOpen(false);
   }, [open]);
 
   const drawer = (
@@ -87,19 +105,62 @@ export default function SiteHeader() {
         </div>
 
         <nav className="flex flex-col gap-1 px-4 py-5">
-          {NAV_LINKS.map((link, i) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              style={{ transitionDelay: open ? `${i * 60 + 100}ms` : "0ms" }}
-              className={`rounded-lg px-4 py-3 text-sm font-semibold uppercase tracking-wide text-parchment/90 transition-all duration-300 ease-out hover:bg-white/10 hover:text-parchment ${
-                open ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link, i) =>
+            link.children ? (
+              <div
+                key={link.label}
+                style={{ transitionDelay: open ? `${i * 60 + 100}ms` : "0ms" }}
+                className={`transition-all duration-300 ease-out ${
+                  open ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setProgramsOpen((v) => !v)}
+                  aria-expanded={programsOpen}
+                  className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:bg-white/10 hover:text-parchment"
+                >
+                  {link.label}
+                  <ChevronDown
+                    size={16}
+                    className={`shrink-0 transition-transform duration-300 ${
+                      programsOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`grid overflow-hidden transition-all duration-300 ease-out ${
+                    programsOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                  }`}
+                >
+                  <div className="overflow-hidden pl-3">
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        onClick={() => setOpen(false)}
+                        className="block rounded-lg px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-parchment/70 transition-colors duration-300 hover:bg-white/10 hover:text-parchment"
+                      >
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                key={link.label}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                style={{ transitionDelay: open ? `${i * 60 + 100}ms` : "0ms" }}
+                className={`rounded-lg px-4 py-3 text-sm font-semibold uppercase tracking-wide text-parchment/90 transition-all duration-300 ease-out hover:bg-white/10 hover:text-parchment ${
+                  open ? "translate-x-0 opacity-100" : "translate-x-6 opacity-0"
+                }`}
+              >
+                {link.label}
+              </Link>
+            )
+          )}
         </nav>
       </div>
     </div>
@@ -119,16 +180,48 @@ export default function SiteHeader() {
         {/* ---- Desktop / tablet: split nav with overlapping center crest ---- */}
         <div className="relative mx-auto hidden h-16 max-w-6xl items-center justify-between px-6 md:flex lg:h-[80px]">
           <nav data-animate className="flex items-center gap-1 text-sm">
-            {NAV_LEFT.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="group relative rounded-full px-3.5 py-1.5 text-[13.5px] font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment lg:px-4"
-              >
-                {link.label}
-                <span className="absolute inset-x-4 -bottom-0.5 h-px origin-left scale-x-0 bg-brass transition-transform duration-300 ease-out group-hover:scale-x-100" />
-              </Link>
-            ))}
+            {NAV_LEFT.map((link) =>
+              link.children ? (
+                <div key={link.href} className="group/item relative">
+                  <Link
+                    href={link.href}
+                    className="group/link relative flex items-center gap-1 rounded-full px-3.5 py-1.5 text-[13.5px] font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment lg:px-4"
+                  >
+                    {link.label}
+                    <ChevronDown
+                      size={13}
+                      className="mt-px transition-transform duration-300 group-hover/item:rotate-180"
+                    />
+                    <span className="absolute inset-x-4 -bottom-0.5 h-px origin-left scale-x-0 bg-brass transition-transform duration-300 ease-out group-hover/link:scale-x-100" />
+                  </Link>
+
+                  {/* Dropdown panel — revealed on hover of the wrapping group,
+                      so hovering either the label or the panel keeps it open. */}
+                  <div className="invisible absolute left-1/2 top-full -translate-x-1/2 translate-y-1 pt-2 opacity-0 transition-all duration-200 ease-out group-hover/item:visible group-hover/item:translate-y-0 group-hover/item:opacity-100">
+                    <div className="w-56 overflow-hidden rounded-lg border border-white/10 bg-ink shadow-xl">
+                      {link.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className="block px-4 py-3 text-xs font-semibold uppercase tracking-wide text-parchment/80 transition-colors duration-200 hover:bg-white/10 hover:text-parchment"
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="group relative rounded-full px-3.5 py-1.5 text-[13.5px] font-semibold uppercase tracking-wide text-parchment/90 transition-colors duration-300 hover:text-parchment lg:px-4"
+                >
+                  {link.label}
+                  <span className="absolute inset-x-4 -bottom-0.5 h-px origin-left scale-x-0 bg-brass transition-transform duration-300 ease-out group-hover:scale-x-100" />
+                </Link>
+              )
+            )}
           </nav>
 
           {/* Center crest — absolutely positioned so it can overflow below the header
