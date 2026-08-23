@@ -17,6 +17,7 @@ export default function SeniorHighSchoolPage() {
       intro="Academic strands for Grades 11–12, building the foundation for aviation, business, and general college pathways."
       programs={shsPrograms}
       requirementGroups={[{ label: "Grade 11 Admission", items: shsRequirements }]}
+      trackSlug="senior-high-school"
     />
   );
 }

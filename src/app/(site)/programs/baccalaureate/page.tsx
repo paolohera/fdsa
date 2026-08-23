@@ -20,6 +20,7 @@ export default function BaccalaureatePage() {
         { label: "Freshman Applicants", items: freshmanRequirements },
         { label: "Transfer Applicants", items: transferRequirements },
       ]}
+      trackSlug="baccalaureate"
     />
   );
 }

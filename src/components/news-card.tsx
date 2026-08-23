@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { MapPin } from "lucide-react";
 
 type NewsCardProps = {
   slug: string;
@@ -11,27 +10,12 @@ type NewsCardProps = {
   featured?: boolean;
 };
 
-function excerpt(text: string, max: number) {
-  const clean = text.trim();
-  if (clean.length <= max) return clean;
-  return clean.slice(0, max).trimEnd() + "…";
-}
-
 export default function NewsCard({
   slug,
   title,
-  body,
-  createdAt,
   imageUrl,
-  location,
   featured = false,
 }: NewsCardProps) {
-  const dateStr = new Date(createdAt).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
   return (
     <Link
       href={`/news/${slug}`}
@@ -42,7 +26,7 @@ export default function NewsCard({
       <div
         className={`relative w-full overflow-hidden bg-ink/5 ${
           featured
-            ? "aspect-[16/9] sm:aspect-auto sm:min-h-[160px] sm:flex-1"
+            ? "aspect-[16/9] sm:aspect-auto sm:min-h-[220px] sm:flex-1"
             : "aspect-[16/10]"
         }`}
       >
@@ -71,17 +55,7 @@ export default function NewsCard({
         )}
       </div>
 
-      <div className={`flex flex-col gap-1.5 ${featured ? "p-5" : "p-3"}`}>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-wide text-brass">
-          <span>{dateStr}</span>
-          {location && (
-            <span className="inline-flex items-center gap-1 font-normal normal-case tracking-normal text-charcoal/55">
-              <MapPin size={11} className="shrink-0" />
-              {location}
-            </span>
-          )}
-        </div>
-
+      <div className={`flex flex-col gap-2 ${featured ? "p-5" : "p-3"}`}>
         <h4
           className={`leading-snug text-ink ${featured ? "text-xl" : "text-sm"}`}
           style={{ fontFamily: "var(--font-display)" }}
@@ -89,16 +63,9 @@ export default function NewsCard({
           {title}
         </h4>
 
-        {featured && (
-          <>
-            <p className="mt-1 text-sm leading-6 text-charcoal/70">
-              {excerpt(body, 200)}
-            </p>
-            <span className="mt-2 text-xs font-semibold uppercase tracking-wide text-ink transition group-hover:text-brass">
-              Read more &rarr;
-            </span>
-          </>
-        )}
+        <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink transition group-hover:text-brass">
+          Read more &rarr;
+        </span>
       </div>
     </Link>
   );

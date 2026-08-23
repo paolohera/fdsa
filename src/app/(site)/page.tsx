@@ -4,6 +4,7 @@ import HeroSection from "@/components/hero-section";
 import ScrollReveal from "@/components/scroll-reveal";
 import ScrollStagger from "@/components/scroll-stagger";
 import NewsCard from "@/components/news-card";
+import NewsCoverflow from "@/components/news-coverflow";
 import { sortByPriority } from "@/lib/news-priority";
 
 export const revalidate = 60; // re-check for new published posts every 60s
@@ -32,29 +33,40 @@ const featuredPrograms = [
 export default async function HomePage() {
   const supabase = await createClient();
 
-  const { data: rawPosts } = await supabase
+  // Pinned/featured posts — shown in the coverflow at the top of the section.
+  const { data: highlightedPosts } = await supabase
     .from("news_posts")
     .select("id, title, slug, body, created_at, image_url, location, priority")
     .eq("published", true)
+    .in("priority", ["pinned", "featured"])
     .order("created_at", { ascending: false })
-    .limit(6); // pull a few extra since pinned/featured may push order around
+    .limit(5);
 
-  const posts = rawPosts ? sortByPriority(rawPosts).slice(0, 3) : rawPosts;
+  // Everything else — shown in the bento grid below the coverflow.
+  const { data: normalPosts } = await supabase
+    .from("news_posts")
+    .select("id, title, slug, body, created_at, image_url, location, priority")
+    .eq("published", true)
+    .eq("priority", "normal")
+    .order("created_at", { ascending: false })
+    .limit(6);
 
-  const { data: heroImage } = await supabase
-    .from("hero_image")
-    .select("image_url")
-    .maybeSingle();
+  const highlighted = highlightedPosts ? sortByPriority(highlightedPosts) : [];
+  const normal = normalPosts ?? [];
 
   const { data: aboutImage } = await supabase
     .from("about_image")
     .select("image_url")
     .maybeSingle();
 
+  const { data: heroImage } = await supabase
+    .from("hero_image")
+    .select("image_url")
+    .maybeSingle();
+
   return (
     <div>
       {/* Hero */}
-          
       <HeroSection imageUrl={heroImage?.image_url} />
 
       {/* About preview */}
@@ -231,7 +243,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Latest news — bento grid */}
+      {/* Latest news — coverflow for pinned/featured, bento grid for the rest */}
       <section className="mx-auto max-w-5xl px-6 py-16">
         <ScrollReveal>
           <div className="flex items-baseline justify-between border-b border-ink/20 pb-3">
@@ -247,26 +259,40 @@ export default async function HomePage() {
           </div>
         </ScrollReveal>
 
-        {(!posts || posts.length === 0) && (
+        {highlighted.length === 0 && normal.length === 0 && (
           <p className="mt-8 text-sm text-charcoal/60">
             No news posted yet. Check back soon.
           </p>
         )}
 
-        <ScrollStagger className="mt-8 grid grid-cols-1 gap-4 sm:grid-flow-row-dense sm:grid-cols-3 sm:auto-rows-[220px]">
-          {posts?.map((post) => (
-            <NewsCard
-              key={post.id}
-              slug={post.slug}
-              title={post.title}
-              body={post.body}
-              createdAt={post.created_at}
-              imageUrl={post.image_url}
-              location={post.location}
-              featured={post.priority === "featured"}
+        {highlighted.length > 0 && (
+          <div className="mt-8">
+            <NewsCoverflow
+              slides={highlighted.map((post) => ({
+                slug: post.slug,
+                title: post.title,
+                imageUrl: post.image_url,
+              }))}
             />
-          ))}
-        </ScrollStagger>
+          </div>
+        )}
+
+        {normal.length > 0 && (
+          <ScrollStagger className="mt-10 grid grid-cols-1 gap-4 sm:grid-flow-row-dense sm:grid-cols-3 sm:auto-rows-[220px]">
+            {normal.map((post) => (
+              <NewsCard
+                key={post.id}
+                slug={post.slug}
+                title={post.title}
+                body={post.body}
+                createdAt={post.created_at}
+                imageUrl={post.image_url}
+                location={post.location}
+                featured={false}
+              />
+            ))}
+          </ScrollStagger>
+        )}
       </section>
 
       {/* Find us */}
