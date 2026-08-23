@@ -10,12 +10,14 @@ export default function ProgramTrackPage({
   intro,
   programs,
   requirementGroups,
+  trackSlug,
 }: {
   eyebrow: string;
   title: string;
   intro: string;
   programs: Program[];
   requirementGroups: { label: string; items: string[] }[];
+  trackSlug: string;
 }) {
   return (
     <div>
@@ -72,6 +74,12 @@ export default function ProgramTrackPage({
                     {program.duration}
                   </p>
                   <p className="mt-3 text-sm leading-6 text-charcoal/80">{program.description}</p>
+                  <Link
+                    href={`/enroll?program=${encodeURIComponent(program.code)}&name=${encodeURIComponent(program.name)}&track=${encodeURIComponent(trackSlug)}`}
+                    className="mt-4 inline-flex items-center gap-2 bg-ink px-5 py-2.5 text-xs font-semibold uppercase tracking-wide text-parchment transition hover:bg-brass hover:text-ink"
+                  >
+                    Enroll Now
+                  </Link>
                 </div>
 
                 <div className="grid grid-cols-1 gap-8 px-6 py-8 sm:grid-cols-2 sm:px-8">

@@ -49,6 +49,14 @@ export const chatMessageRatelimit = new Ratelimit({
   analytics: true,
 });
 
+// Enrollment form — public-facing, protect against spam floods.
+export const enrollRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(3, "60 s"), // 3 submissions / minute / IP
+  prefix: "ratelimit:enroll",
+  analytics: true,
+});
+
 // Vercel puts the real client IP in this header. Falls back to a generic
 // bucket if it's ever missing (e.g. local dev), so rate limiting doesn't
 // crash — it just becomes a shared bucket for all local requests.

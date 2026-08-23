@@ -10,7 +10,7 @@ import {
   Gem,
   Mail,
   MessageCircle,
-  LogOut,
+  ClipboardCheck,
   SquareArrowOutUpRight,
   Plus,
 } from "lucide-react";
@@ -20,6 +20,7 @@ import AdminNavLink from "@/components/admin/admin-nav-link";
 import AdminSearch from "@/components/admin/admin-search";
 import AdminTopbarTitle from "@/components/admin/admin-topbar-title";
 import AdminNotificationBell from "@/components/admin/admin-notification-bell";
+import AdminLogoutButton from "@/components/admin/admin-logout-button";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,34 @@ export default async function AdminLayout({
     .select("*", { count: "exact", head: true })
     .eq("status", "open");
 
+  const { count: newApplications } = await supabase
+    .from("enrollment_submissions")
+    .select("*", { count: "exact", head: true })
+    .eq("status", "new");
+
+  // Preview data for the notification dropdown — a small recent slice of
+  // each unread/open/new item, merged and sorted client-side by time.
+  const { data: recentMessages } = await supabase
+    .from("contact_messages")
+    .select("id, name, message, created_at")
+    .eq("read", false)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const { data: recentChats } = await supabase
+    .from("chat_conversations")
+    .select("id, visitor_name, last_message_at")
+    .eq("status", "open")
+    .order("last_message_at", { ascending: false })
+    .limit(5);
+
+  const { data: recentApplications } = await supabase
+    .from("enrollment_submissions")
+    .select("id, program_name, data, submitted_at")
+    .eq("status", "new")
+    .order("submitted_at", { ascending: false })
+    .limit(5);
+
   return (
     <div className="min-h-screen bg-parchment">
       {/* Sidebar */}
@@ -79,7 +108,7 @@ export default async function AdminLayout({
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-6">
           <AdminNavLink href="/admin" label="Dashboard" icon={<LayoutDashboard size={17} strokeWidth={2} />} />
-          <AdminNavLink href="/admin/news" label="News Management" icon={<Newspaper size={17} strokeWidth={2} />} />
+          <AdminNavLink href="/admin/news" label="News Management" icon={<Newspaper size={17} strokeWidth={2} />} matchNested />
           <AdminNavLink href="/admin/hero" label="Hero Section" icon={<GalleryHorizontal size={17} strokeWidth={2} />} />
 
           <p className="px-3 pt-5 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-parchment/30">
@@ -108,6 +137,13 @@ export default async function AdminLayout({
             label="Live Chat"
             icon={<MessageCircle size={17} strokeWidth={2} />}
             badge={openChats ?? 0}
+          />
+          <AdminNavLink
+            href="/admin/enrollment"
+            label="Enrollment"
+            icon={<ClipboardCheck size={17} strokeWidth={2} />}
+            badge={newApplications ?? 0}
+            matchNested
           />
         </nav>
 
@@ -144,15 +180,7 @@ export default async function AdminLayout({
             <p className="truncate text-xs font-semibold text-parchment">{profile.email}</p>
             <p className="text-[11px] capitalize text-brass">{profile.role}</p>
           </div>
-          <form action={logout}>
-            <button
-              type="submit"
-              aria-label="Sign out"
-              className="p-1.5 text-parchment/50 transition hover:text-parchment"
-            >
-              <LogOut size={17} strokeWidth={2} />
-            </button>
-          </form>
+          <AdminLogoutButton logoutAction={logout} />
         </div>
       </aside>
 
@@ -167,6 +195,10 @@ export default async function AdminLayout({
           <AdminNotificationBell
             initialUnreadMessages={unreadMessages ?? 0}
             initialOpenChats={openChats ?? 0}
+            initialNewApplications={newApplications ?? 0}
+            initialRecentMessages={recentMessages ?? []}
+            initialRecentChats={recentChats ?? []}
+            initialRecentApplications={recentApplications ?? []}
           />
         </header>
 
