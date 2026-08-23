@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import ScrollReveal from "@/components/scroll-reveal";
-import ScrollStagger from "@/components/scroll-stagger";
+import MagneticProgramCarousel from "@/components/magnetic-program-carousel";
 import { baccalaureatePrograms, twoYearPrograms, shsPrograms } from "@/lib/program-data";
 
 export const metadata: Metadata = {
@@ -12,25 +10,24 @@ export const metadata: Metadata = {
   alternates: { canonical: "/programs" },
 };
 
-const tracks = [
-  {
-    href: "/programs/baccalaureate",
-    label: "Baccalaureate",
-    approvedBy: "Approved by CHED",
-    programs: baccalaureatePrograms,
-  },
-  {
-    href: "/programs/two-year-technical",
-    label: "Two-Year Technical",
-    approvedBy: "Approved by CAAP",
-    programs: twoYearPrograms,
-  },
-  {
-    href: "/programs/senior-high-school",
-    label: "Senior High School",
-    approvedBy: "Approved by DepEd",
-    programs: shsPrograms,
-  },
+// Every individual program, each linking straight to its own section on the
+// relevant track page (#CODE anchors defined in program-track-page.tsx).
+const allPrograms = [
+  ...baccalaureatePrograms.map((p) => ({
+    href: `/programs/baccalaureate#${p.code}`,
+    code: p.code,
+    imageSrc: undefined as string | undefined, // e.g. "/programs/bamt-student.jpg" once ready
+  })),
+  ...twoYearPrograms.map((p) => ({
+    href: `/programs/two-year-technical#${p.code}`,
+    code: p.code,
+    imageSrc: undefined as string | undefined,
+  })),
+  ...shsPrograms.map((p) => ({
+    href: `/programs/senior-high-school#${p.code}`,
+    code: p.code,
+    imageSrc: undefined as string | undefined,
+  })),
 ];
 
 export default function ProgramsPage() {
@@ -64,36 +61,12 @@ export default function ProgramsPage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-6 py-16">
-        <ScrollStagger className="grid gap-8 sm:grid-cols-3">
-          {tracks.map((track) => (
-            <Link
-              key={track.href}
-              href={track.href}
-              className="group flex flex-col border border-ink/15 bg-paper p-6 transition hover:border-ink/30 hover:shadow-md"
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-brass">
-                {track.approvedBy}
-              </p>
-              <h2
-                className="mt-2 text-xl text-ink"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                {track.label}
-              </h2>
-              <ul className="mt-4 flex-1 space-y-1.5">
-                {track.programs.map((p) => (
-                  <li key={p.code} className="text-sm text-charcoal/70">
-                    <span className="font-semibold text-ink">{p.code}</span> — {p.name}
-                  </li>
-                ))}
-              </ul>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-brass transition-transform duration-300 group-hover:translate-x-1">
-                View Program
-                <ArrowRight size={14} />
-              </span>
-            </Link>
-          ))}
-        </ScrollStagger>
+        <ScrollReveal>
+          <p className="mb-8 text-center text-sm text-charcoal/60">
+            Hover to preview, click to explore a program.
+          </p>
+        </ScrollReveal>
+        <MagneticProgramCarousel items={allPrograms} />
       </section>
     </div>
   );

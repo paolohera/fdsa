@@ -28,6 +28,36 @@ const OPACITY = 55;
 const DURATION = 0.6;
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
+// Card size shrinks on narrow viewports so neighbouring cards don't get
+// clipped by the screen edge — measured against the container's own width,
+// not the raw window, so it still behaves inside a constrained layout.
+function useResponsiveCardSize(baseWidth: number, baseHeight: number) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: baseWidth, height: baseHeight });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    function measure() {
+      const containerWidth = el!.clientWidth;
+      // Leave room on both sides for the tilted neighbour cards to peek out
+      // without being cut off by the container edge.
+      const maxCardWidth = containerWidth * 0.72;
+      const width = Math.min(baseWidth, Math.max(220, maxCardWidth));
+      const scale = width / baseWidth;
+      setSize({ width, height: Math.round(baseHeight * scale) });
+    }
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [baseWidth, baseHeight]);
+
+  return { containerRef, size };
+}
+
 export default function NewsCoverflow({
   slides,
   cardWidth = 420,
@@ -40,6 +70,7 @@ export default function NewsCoverflow({
   const router = useRouter();
   const n = slides.length;
   const [active, setActive] = useState(0);
+  const { containerRef, size } = useResponsiveCardSize(cardWidth, cardHeight);
 
   useEffect(() => {
     setActive((a) => Math.max(0, Math.min(n - 1, a)));
@@ -91,9 +122,13 @@ export default function NewsCoverflow({
   if (n === 0) return null;
 
   const dim = 1 - OPACITY / 100;
+  // Scale the gap/depth proportionally too, so neighbour cards on mobile
+  // don't fly off further than the smaller viewport can show.
+  const scaleFactor = size.width / cardWidth;
 
   return (
     <div
+      ref={containerRef}
       style={{
         position: "relative",
         width: "100%",
@@ -103,7 +138,7 @@ export default function NewsCoverflow({
         perspective: `${PERSPECTIVE}px`,
         overflow: "hidden",
         outline: "none",
-        minHeight: cardHeight + 40,
+        minHeight: size.height + 40,
       }}
       tabIndex={0}
       role="group"
@@ -113,8 +148,8 @@ export default function NewsCoverflow({
       <div
         style={{
           position: "relative",
-          width: cardWidth,
-          height: cardHeight,
+          width: size.width,
+          height: size.height,
           transformStyle: "preserve-3d",
         }}
       >
@@ -127,8 +162,8 @@ export default function NewsCoverflow({
           const visible = ax <= MAX_VISIBLE;
           const isActive = rel === 0;
           const sc = Math.max(0.4, 1 - ax * SCALE_STEP);
-          const tx = rel * (GAP * 30);
-          const tz = -ax * DEPTH;
+          const tx = rel * (GAP * 30 * scaleFactor);
+          const tz = -ax * DEPTH * scaleFactor;
           const ry = -rel * TILT;
           const rz = rel * SIDE_TILT;
 
@@ -136,8 +171,8 @@ export default function NewsCoverflow({
             position: "absolute",
             left: "50%",
             top: "50%",
-            width: cardWidth,
-            height: cardHeight,
+            width: size.width,
+            height: size.height,
             borderRadius: 4,
             overflow: "hidden",
             transformStyle: "preserve-3d",
@@ -226,7 +261,7 @@ export default function NewsCoverflow({
                   style={{
                     display: "block",
                     color: "#F5F0E6",
-                    fontSize: 18,
+                    fontSize: Math.max(13, 18 * scaleFactor),
                     fontWeight: 600,
                     lineHeight: 1.25,
                     fontFamily: "var(--font-display)",

@@ -56,7 +56,9 @@ export default function ProgramTrackPage({
         <div className="space-y-16">
           {programs.map((program) => (
             <ScrollReveal key={program.code}>
-              <div className="border border-ink/15 bg-paper">
+              {/* scroll-mt-24 offsets the sticky header when jumping here via
+                  #anchor links, e.g. from the magnetic program carousel. */}
+              <div id={program.code} className="scroll-mt-24 border border-ink/15 bg-paper">
                 <div className="border-b border-ink/10 bg-parchment/40 px-6 py-6 sm:px-8">
                   <div className="flex flex-wrap items-baseline justify-between gap-3">
                     <h2
