@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ScrollReveal from "@/components/scroll-reveal";
 import MagneticProgramCarousel from "@/components/magnetic-program-carousel";
+import { createClient } from "@/lib/supabase/server";
 import { baccalaureatePrograms, twoYearPrograms, shsPrograms } from "@/lib/program-data";
 
 export const metadata: Metadata = {
@@ -10,27 +11,43 @@ export const metadata: Metadata = {
   alternates: { canonical: "/programs" },
 };
 
-// Every individual program, each linking straight to its own section on the
-// relevant track page (#CODE anchors defined in program-track-page.tsx).
-const allPrograms = [
-  ...baccalaureatePrograms.map((p) => ({
-    href: `/programs/baccalaureate#${p.code}`,
-    code: p.code,
-    imageSrc: undefined as string | undefined, // e.g. "/programs/bamt-student.jpg" once ready
-  })),
-  ...twoYearPrograms.map((p) => ({
-    href: `/programs/two-year-technical#${p.code}`,
-    code: p.code,
-    imageSrc: undefined as string | undefined,
-  })),
-  ...shsPrograms.map((p) => ({
-    href: `/programs/senior-high-school#${p.code}`,
-    code: p.code,
-    imageSrc: undefined as string | undefined,
-  })),
-];
+export const revalidate = 3600;
 
-export default function ProgramsPage() {
+export default async function ProgramsPage() {
+  const supabase = await createClient();
+
+  const { data: images } = await supabase
+    .from("program_images")
+    .select("program_code, image_url, label, is_custom");
+
+  const imageByCode = new Map((images ?? []).map((img) => [img.program_code, img.image_url]));
+  const customCards = (images ?? []).filter((img) => img.is_custom);
+
+  const allPrograms = [
+    ...baccalaureatePrograms.map((p) => ({
+      href: `/programs/baccalaureate#${p.code}`,
+      code: p.code,
+      imageSrc: imageByCode.get(p.code) ?? undefined,
+    })),
+    ...twoYearPrograms.map((p) => ({
+      href: `/programs/two-year-technical#${p.code}`,
+      code: p.code,
+      imageSrc: imageByCode.get(p.code) ?? undefined,
+    })),
+    ...shsPrograms.map((p) => ({
+      href: `/programs/senior-high-school#${p.code}`,
+      code: p.code,
+      imageSrc: imageByCode.get(p.code) ?? undefined,
+    })),
+    // Custom admin-added cards — no dedicated track page, so they route
+    // straight to the enrollment form with their code/label pre-filled.
+    ...customCards.map((c) => ({
+      href: `/enroll?program=${encodeURIComponent(c.program_code)}&name=${encodeURIComponent(c.label ?? c.program_code)}`,
+      code: c.program_code,
+      imageSrc: c.image_url ?? undefined,
+    })),
+  ];
+
   return (
     <div>
       <section className="relative overflow-hidden bg-ink">
