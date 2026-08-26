@@ -25,17 +25,17 @@ export default async function ProgramsPage() {
 
   const allPrograms = [
     ...baccalaureatePrograms.map((p) => ({
-      href: `/programs/baccalaureate#${p.code}`,
+      href: `/programs/baccalaureate/${p.code.toLowerCase()}`,
       code: p.code,
       imageSrc: imageByCode.get(p.code) ?? undefined,
     })),
     ...twoYearPrograms.map((p) => ({
-      href: `/programs/two-year-technical#${p.code}`,
+      href: `/programs/two-year-technical/${p.code.toLowerCase()}`,
       code: p.code,
       imageSrc: imageByCode.get(p.code) ?? undefined,
     })),
     ...shsPrograms.map((p) => ({
-      href: `/programs/senior-high-school#${p.code}`,
+      href: `/programs/senior-high-school/${p.code.toLowerCase()}`,
       code: p.code,
       imageSrc: imageByCode.get(p.code) ?? undefined,
     })),

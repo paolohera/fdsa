@@ -5,20 +5,20 @@ import ScrollStagger from "@/components/scroll-stagger";
 import ProgramCard from "@/components/program-card";
 import type { Program } from "@/lib/program-data";
 
-export default function ProgramTrackPage({
+export default function ProgramDetailPage({
   eyebrow,
-  title,
-  intro,
-  programs,
+  program,
   requirementGroups,
   trackSlug,
+  trackHref,
+  trackTitle,
 }: {
   eyebrow: string;
-  title: string;
-  intro: string;
-  programs: Program[];
+  program: Program;
   requirementGroups: { label: string; items: string[] }[];
   trackSlug: string;
+  trackHref: string;
+  trackTitle: string;
 }) {
   return (
     <div>
@@ -31,40 +31,28 @@ export default function ProgramTrackPage({
 
         <ScrollReveal className="relative mx-auto max-w-3xl px-6 pt-28 pb-16 text-center sm:pt-32 sm:pb-20 lg:pt-40">
           <Link
-            href="/programs"
+            href={trackHref}
             className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-parchment/60 transition hover:text-parchment"
           >
             <ArrowLeft size={14} />
-            All Programs
+            {trackTitle}
           </Link>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-brass" style={{ fontFamily: "var(--font-display)" }}>
             {eyebrow}
           </p>
           <h1 className="mt-2 text-4xl text-parchment" style={{ fontFamily: "var(--font-display)" }}>
-            {title}
+            {program.name}
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-parchment/70">{intro}</p>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-parchment/70">
+            {program.description}
+          </p>
         </ScrollReveal>
       </section>
 
       <section className="mx-auto max-w-5xl px-6 py-16">
-        <div className="space-y-16">
-          {programs.map((program) => (
-            <ScrollReveal key={program.code}>
-              <div className="space-y-3">
-                <ProgramCard program={program} trackSlug={trackSlug} />
-                <div className="text-right">
-                  <Link
-                    href={`/programs/${trackSlug}/${program.code.toLowerCase()}`}
-                    className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-brass hover:underline"
-                  >
-                    View {program.code} dedicated page →
-                  </Link>
-                </div>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
+        <ScrollReveal>
+          <ProgramCard program={program} trackSlug={trackSlug} />
+        </ScrollReveal>
       </section>
 
       <section className="border-t border-ink/10 bg-paper">

@@ -150,3 +150,7 @@ export const shsPrograms: Program[] = [
     ],
   },
 ];
+
+export function findProgramByCode(programs: Program[], code: string): Program | undefined {
+  return programs.find((p) => p.code.toLowerCase() === code.toLowerCase());
+}
