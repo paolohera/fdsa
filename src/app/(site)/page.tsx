@@ -9,27 +9,6 @@ import { sortByPriority } from "@/lib/news-priority";
 
 export const revalidate = 60; // re-check for new published posts every 60s
 
-// One flagship program per academic track — a homepage teaser, not the
-// full catalog. The complete list lives on /programs.
-const featuredPrograms = [
-  {
-    code: "BAMT",
-    track: "Baccalaureate",
-    name: "Bachelor in Aircraft Maintenance Technology",
-    description:
-      "A four-year degree preparing students for licensure and careers maintaining aircraft airframes, powerplants, and systems.",
-    imageSrc: undefined as string | undefined, // e.g. "/bamt.jpg" once ready
-  },
-  {
-    code: "AET",
-    track: "Two-Year Technical",
-    name: "Aviation Electronics Technology",
-    description:
-      "Technical training in aircraft electronics, instrumentation, and communication systems.",
-    imageSrc: undefined as string | undefined, // e.g. "/aet.jpg" once ready
-  },
-];
-
 export default async function HomePage() {
   const supabase = await createClient();
 
@@ -63,6 +42,14 @@ export default async function HomePage() {
     .from("hero_image")
     .select("image_url")
     .maybeSingle();
+
+  // "What We Offer" homepage cards — admin-managed via /admin/what-we-offer.
+  const { data: featuredProgramsData } = await supabase
+    .from("homepage_programs")
+    .select("id, code, track, name, description, image_url, link_href")
+    .order("sort_order", { ascending: true });
+
+  const featuredPrograms = featuredProgramsData ?? [];
 
   return (
     <div>
@@ -171,66 +158,72 @@ export default async function HomePage() {
           </div>
         </ScrollReveal>
 
-        <ScrollStagger className="divide-y divide-ink/10">
-          {featuredPrograms.map((program) => (
-            <Link
-              key={program.code}
-              href="/programs"
-              className="group -mx-4 grid grid-cols-1 gap-4 px-4 py-9 transition hover:bg-ink/[0.03] sm:grid-cols-12 sm:items-center sm:gap-6"
-            >
-              <div className="sm:col-span-3">
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-ink/5">
-                  {program.imageSrc ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={program.imageSrc}
-                      alt={program.name}
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-1 border border-dashed border-ink/25 text-center">
-                      <span className="text-[10px] uppercase tracking-widest text-charcoal/40">
-                        Photo placeholder
-                      </span>
-                      <span className="text-[9px] text-charcoal/30">{program.code}</span>
-                    </div>
-                  )}
+        {featuredPrograms.length === 0 ? (
+          <p className="mt-8 text-sm text-charcoal/60">
+            No programs added yet. Add one from /admin/what-we-offer.
+          </p>
+        ) : (
+          <ScrollStagger className="divide-y divide-ink/10">
+            {featuredPrograms.map((program) => (
+              <Link
+                key={program.id}
+                href={program.link_href || "/programs"}
+                className="group -mx-4 grid grid-cols-1 gap-4 px-4 py-9 transition hover:bg-ink/[0.03] sm:grid-cols-12 sm:items-center sm:gap-6"
+              >
+                <div className="sm:col-span-3">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-ink/5">
+                    {program.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={program.image_url}
+                        alt={program.name}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full flex-col items-center justify-center gap-1 border border-dashed border-ink/25 text-center">
+                        <span className="text-[10px] uppercase tracking-widest text-charcoal/40">
+                          Photo placeholder
+                        </span>
+                        <span className="text-[9px] text-charcoal/30">{program.code}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="sm:col-span-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-brass">
-                  {program.track}
-                </p>
-                <p
-                  className="mt-1 text-3xl leading-none text-ink transition-colors group-hover:text-brass sm:text-4xl"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {program.code}
-                </p>
-              </div>
+                <div className="sm:col-span-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-brass">
+                    {program.track}
+                  </p>
+                  <p
+                    className="mt-1 text-3xl leading-none text-ink transition-colors group-hover:text-brass sm:text-4xl"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    {program.code}
+                  </p>
+                </div>
 
-              <div className="sm:col-span-4">
-                <h4
-                  className="text-lg leading-snug text-ink"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  {program.name}
-                </h4>
-                <p className="mt-1.5 text-sm leading-6 text-charcoal/70">
-                  {program.description}
-                </p>
-              </div>
+                <div className="sm:col-span-4">
+                  <h4
+                    className="text-lg leading-snug text-ink"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    {program.name}
+                  </h4>
+                  <p className="mt-1.5 text-sm leading-6 text-charcoal/70">
+                    {program.description}
+                  </p>
+                </div>
 
-              <div className="sm:col-span-2 sm:text-right">
-                <span className="inline-flex items-center gap-1.5 text-sm text-ink transition-all group-hover:gap-2.5 group-hover:text-brass">
-                  Learn more
-                  <span aria-hidden="true">→</span>
-                </span>
-              </div>
-            </Link>
-          ))}
-        </ScrollStagger>
+                <div className="sm:col-span-2 sm:text-right">
+                  <span className="inline-flex items-center gap-1.5 text-sm text-ink transition-all group-hover:gap-2.5 group-hover:text-brass">
+                    Learn more
+                    <span aria-hidden="true">→</span>
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </ScrollStagger>
+        )}
 
         <div className="mt-10 text-center">
           <Link

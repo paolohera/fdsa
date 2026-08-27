@@ -1,0 +1,279 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2, ArrowUp, ArrowDown, Save } from "lucide-react";
+import { AdminCard, AdminButton } from "@/components/admin/admin-ui";
+import { compressImage } from "@/lib/compress-image";
+import { useAdminToast } from "@/components/admin/admin-toast";
+import ConfirmModal from "@/components/admin/confirm-modal";
+
+type HomepageProgram = {
+  id: string;
+  code: string;
+  track: string;
+  name: string;
+  description: string;
+  image_url: string | null;
+  storage_path: string | null;
+  link_href: string;
+  sort_order: number;
+};
+
+export default function HomepageProgramCard({
+  item,
+  isFirst,
+  isLast,
+  updateTextAction,
+  updateImageAction,
+  removeImageAction,
+  deleteAction,
+  moveUpAction,
+  moveDownAction,
+}: {
+  item: HomepageProgram;
+  isFirst: boolean;
+  isLast: boolean;
+  updateTextAction: (formData: FormData) => Promise<void>;
+  updateImageAction: (formData: FormData) => Promise<void>;
+  removeImageAction: () => Promise<void>;
+  deleteAction: () => Promise<void>;
+  moveUpAction: () => Promise<void>;
+  moveDownAction: () => Promise<void>;
+}) {
+  const router = useRouter();
+  const [preview, setPreview] = useState<string | null>(item.image_url);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [compressing, setCompressing] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const [reordering, startReorder] = useTransition();
+  const { showToast } = useAdminToast();
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+    setPreview(URL.createObjectURL(file));
+  }
+
+  function handleTextSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    startTransition(async () => {
+      try {
+        await updateTextAction(formData);
+        router.refresh();
+        showToast(`${item.code} details saved`, "success");
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to save details", "error");
+      }
+    });
+  }
+
+  async function handleImageSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!selectedFile) return;
+
+    setCompressing(true);
+    const compressed = await compressImage(selectedFile);
+    setCompressing(false);
+
+    const formData = new FormData();
+    formData.set("image", compressed);
+
+    startTransition(async () => {
+      try {
+        await updateImageAction(formData);
+        router.refresh();
+        showToast(`${item.code} image saved`, "success");
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to save image", "error");
+      }
+    });
+  }
+
+  function handleRemoveImage() {
+    startTransition(async () => {
+      try {
+        await removeImageAction();
+        setPreview(null);
+        router.refresh();
+        showToast(`${item.code} image removed`, "success");
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to remove image", "error");
+      }
+    });
+  }
+
+  function handleMove(direction: "up" | "down") {
+    startReorder(async () => {
+      try {
+        await (direction === "up" ? moveUpAction() : moveDownAction());
+        router.refresh();
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to reorder", "error");
+      }
+    });
+  }
+
+  function handleDelete() {
+    return new Promise<void>((resolve) => {
+      startTransition(async () => {
+        try {
+          await deleteAction();
+          router.refresh();
+          showToast(`${item.code} card deleted`, "success");
+        } catch (err) {
+          showToast(err instanceof Error ? err.message : "Failed to delete card", "error");
+        }
+        resolve();
+      });
+    });
+  }
+
+  const isBusy = compressing || pending;
+
+  return (
+    <AdminCard className="grid grid-cols-1 gap-6 p-5 sm:grid-cols-12 sm:items-start">
+      {/* Reorder */}
+      <div className="flex flex-row gap-2 sm:col-span-1 sm:flex-col">
+        <AdminButton
+          type="button"
+          variant="secondary"
+          disabled={isFirst || reordering}
+          onClick={() => handleMove("up")}
+          className="justify-center px-2 py-1.5"
+        >
+          <ArrowUp size={14} />
+        </AdminButton>
+        <AdminButton
+          type="button"
+          variant="secondary"
+          disabled={isLast || reordering}
+          onClick={() => handleMove("down")}
+          className="justify-center px-2 py-1.5"
+        >
+          <ArrowDown size={14} />
+        </AdminButton>
+      </div>
+
+      {/* Image */}
+      <div className="sm:col-span-3">
+        <div className="relative aspect-[4/3] w-full overflow-hidden bg-ink/5">
+          {preview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={preview}
+              alt={item.name}
+              className={`h-full w-full object-cover transition-opacity ${isBusy ? "opacity-50" : ""}`}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <span className="text-xs uppercase tracking-widest text-charcoal/40">No image</span>
+            </div>
+          )}
+          {isBusy && (
+            <div className="absolute inset-0 flex items-center justify-center bg-ink/20">
+              <Loader2 size={24} className="animate-spin text-parchment" />
+            </div>
+          )}
+        </div>
+
+        <form onSubmit={handleImageSubmit} className="mt-2 flex flex-col gap-2">
+          <input
+            type="file"
+            accept="image/*"
+            disabled={isBusy}
+            onChange={handleFileChange}
+            className="text-xs text-charcoal/60 file:mr-2 file:border-0 file:bg-ink/5 file:px-2.5 file:py-1.5 file:text-xs file:font-medium file:text-ink hover:file:bg-ink/10 disabled:opacity-50"
+          />
+          <AdminButton
+            type="submit"
+            variant="secondary"
+            disabled={!selectedFile || isBusy}
+            className="justify-center gap-2 px-3 py-1.5 text-xs"
+          >
+            {isBusy && <Loader2 size={13} className="animate-spin" />}
+            {compressing ? "Compressing…" : item.image_url ? "Replace image" : "Upload image"}
+          </AdminButton>
+          {item.image_url && (
+            <AdminButton
+              type="button"
+              variant="danger"
+              disabled={isBusy}
+              onClick={handleRemoveImage}
+              className="justify-center gap-2 px-3 py-1.5 text-xs"
+            >
+              Remove image
+            </AdminButton>
+          )}
+        </form>
+      </div>
+
+      {/* Text fields */}
+      <form onSubmit={handleTextSubmit} className="grid grid-cols-1 gap-2 sm:col-span-8 sm:grid-cols-2">
+        <input
+          name="code"
+          defaultValue={item.code}
+          placeholder="Code (e.g. BAMT)"
+          required
+          className="border border-ink/20 px-2.5 py-1.5 text-sm outline-none focus:border-brass"
+        />
+        <input
+          name="track"
+          defaultValue={item.track}
+          placeholder="Track (e.g. Baccalaureate)"
+          required
+          className="border border-ink/20 px-2.5 py-1.5 text-sm outline-none focus:border-brass"
+        />
+        <input
+          name="name"
+          defaultValue={item.name}
+          placeholder="Full program name"
+          required
+          className="col-span-2 border border-ink/20 px-2.5 py-1.5 text-sm outline-none focus:border-brass"
+        />
+        <textarea
+          name="description"
+          defaultValue={item.description}
+          placeholder="Description"
+          required
+          rows={3}
+          className="col-span-2 border border-ink/20 px-2.5 py-1.5 text-sm outline-none focus:border-brass"
+        />
+        <input
+          name="link_href"
+          defaultValue={item.link_href}
+          placeholder="Learn more link (e.g. /programs)"
+          className="col-span-2 border border-ink/20 px-2.5 py-1.5 text-sm outline-none focus:border-brass"
+        />
+
+        <div className="col-span-2 flex items-center justify-between pt-1">
+          <AdminButton type="submit" disabled={pending} className="gap-2 px-3 py-1.5 text-xs">
+            {pending && <Loader2 size={13} className="animate-spin" />}
+            <Save size={13} />
+            Save details
+          </AdminButton>
+
+          <ConfirmModal
+            title={`Delete ${item.code} card?`}
+            description="This removes the card and its image from the homepage entirely. This can't be undone."
+            confirmLabel="Delete"
+            variant="danger"
+            onConfirm={handleDelete}
+            trigger={
+              <AdminButton
+                type="button"
+                variant="danger"
+                disabled={pending}
+                className="!border !border-red-200 !text-red-600 hover:!bg-red-50 px-3 py-1.5 text-xs"
+              >
+                Delete card
+              </AdminButton>
+            }
+          />
+        </div>
+      </form>
+    </AdminCard>
+  );
+}

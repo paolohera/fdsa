@@ -16,11 +16,18 @@ export default async function EditPostPage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const { data: post } = await supabase
-    .from("news_posts")
-    .select("title, body, published, priority, image_url, location, created_at")
-    .eq("id", id)
-    .single();
+  const [{ data: post }, { data: galleryImages }] = await Promise.all([
+    supabase
+      .from("news_posts")
+      .select("title, body, published, priority, image_url, location, created_at")
+      .eq("id", id)
+      .single(),
+    supabase
+      .from("news_post_images")
+      .select("id, image_url, storage_path, sort_order")
+      .eq("post_id", id)
+      .order("sort_order", { ascending: true }),
+  ]);
 
   if (!post) notFound();
 
@@ -35,7 +42,13 @@ export default async function EditPostPage({
         <ArrowLeft size={15} />
         Back to news
       </Link>
-      <PostForm action={updatePostWithId} defaultValues={post} error={error} />
+      <PostForm
+        action={updatePostWithId}
+        postId={id}
+        galleryImages={galleryImages ?? []}
+        defaultValues={post}
+        error={error}
+      />
     </div>
   );
-} 
+}

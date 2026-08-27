@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import NewsGallery from "@/components/news-gallery";
 
 export const revalidate = 60;
 
@@ -63,14 +64,26 @@ export default async function NewsDetailPage({
   const { slug } = await params;
   const supabase = await createClient();
 
-  const { data: post } = await supabase
+  // Single round trip: post fields + its gallery images via the embedded
+  // relation, instead of a second query after the fact.
+  const { data: post, error: postError } = await supabase
     .from("news_posts")
-    .select("title, body, created_at, image_url, location")
+    .select(
+      "title, body, created_at, image_url, location, news_post_images(image_url, sort_order)"
+    )
     .eq("slug", slug)
     .eq("published", true)
     .single();
 
+  if (postError) {
+    console.error("news detail query error:", postError);
+  }
+
   if (!post) notFound();
+
+  const gallery = (post.news_post_images ?? [])
+    .slice()
+    .sort((a, b) => a.sort_order - b.sort_order);
 
   // NewsArticle structured data — helps Google associate this page with
   // your organization and can surface it in Top Stories / rich results.
@@ -149,6 +162,8 @@ export default async function NewsDetailPage({
         <div className="mt-8 whitespace-pre-wrap text-base leading-7 text-charcoal">
           {post.body}
         </div>
+
+        <NewsGallery images={gallery} />
       </div>
     </article>
   );

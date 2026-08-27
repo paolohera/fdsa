@@ -4,6 +4,8 @@ import {
   LayoutDashboard,
   Newspaper,
   GalleryHorizontal,
+  Images,
+  GraduationCap,
   Image as ImageIcon,
   Clock,
   Compass,
@@ -113,7 +115,8 @@ export default async function AdminLayout({
         <AdminNavLink href="/admin" label="Dashboard" icon={<LayoutDashboard size={17} strokeWidth={2} />} />
         <AdminNavLink href="/admin/news" label="News Management" icon={<Newspaper size={17} strokeWidth={2} />} matchNested />
         <AdminNavLink href="/admin/hero" label="Hero Section" icon={<GalleryHorizontal size={17} strokeWidth={2} />} />
-        <AdminNavLink href="/admin/programs" label="Program Images" icon={<GalleryHorizontal size={17} strokeWidth={2} />} />
+        <AdminNavLink href="/admin/programs" label="Program Images" icon={<Images size={17} strokeWidth={2} />} />
+        <AdminNavLink href="/admin/what-we-offer" label="What We Offer" icon={<GraduationCap size={17} strokeWidth={2} />} />
 
         <p className="px-3 pt-5 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-parchment/30">
           About Page
