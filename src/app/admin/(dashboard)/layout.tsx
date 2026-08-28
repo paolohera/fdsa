@@ -6,6 +6,7 @@ import {
   GalleryHorizontal,
   Images,
   GraduationCap,
+  Construction,
   Image as ImageIcon,
   Clock,
   Compass,
@@ -133,6 +134,11 @@ export default async function AdminLayout({
         <p className="px-3 pt-5 pb-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-parchment/30">
           Site
         </p>
+        <AdminNavLink
+          href="/admin/dev-notice"
+          label="Development Notice"
+          icon={<Construction size={17} strokeWidth={2} />}
+        />
         <AdminNavLink
           href="/admin/messages"
           label="Messages"

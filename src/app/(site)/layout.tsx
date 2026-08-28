@@ -5,6 +5,7 @@ import SecretLoginModal from "@/components/secret-login-modal";
 import SmoothScrollProvider from "@/components/smooth-scroll-provider";
 import SiteHeader from "@/components/site-header";
 import FloatingChat from "@/components/floating-chat/floating-chat";
+import DevNoticeGate from "@/components/dev-notice-gate";
 
 const accreditations = [
   { src: "/logo/ched.png", alt: "Commission on Higher Education" },
@@ -24,6 +25,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       <SiteHeader />
       <SecretLoginModal />
       <FloatingChat />
+      <DevNoticeGate />
 
       <SmoothScrollProvider>
         <div className="flex min-h-screen flex-col">

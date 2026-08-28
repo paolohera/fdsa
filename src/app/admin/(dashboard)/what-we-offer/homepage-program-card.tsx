@@ -43,17 +43,45 @@ export default function HomepageProgramCard({
 }) {
   const router = useRouter();
   const [preview, setPreview] = useState<string | null>(item.image_url);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressing, setCompressing] = useState(false);
   const [pending, startTransition] = useTransition();
   const [reordering, startReorder] = useTransition();
   const { showToast } = useAdminToast();
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setSelectedFile(file);
-    setPreview(URL.createObjectURL(file));
+
+    setCompressing(true);
+    let processed: File;
+    try {
+      processed = await compressImage(file);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Couldn't process that image", "error");
+      setCompressing(false);
+      e.target.value = "";
+      return;
+    }
+    setCompressing(false);
+
+    const previousPreview = preview;
+    setPreview(URL.createObjectURL(processed));
+
+    const formData = new FormData();
+    formData.set("image", processed);
+
+    startTransition(async () => {
+      try {
+        await updateImageAction(formData);
+        router.refresh();
+        showToast(`${item.code} image saved`, "success");
+      } catch (err) {
+        setPreview(previousPreview);
+        showToast(err instanceof Error ? err.message : "Failed to save image — try again", "error");
+      }
+    });
+
+    e.target.value = "";
   }
 
   function handleTextSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -66,28 +94,6 @@ export default function HomepageProgramCard({
         showToast(`${item.code} details saved`, "success");
       } catch (err) {
         showToast(err instanceof Error ? err.message : "Failed to save details", "error");
-      }
-    });
-  }
-
-  async function handleImageSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!selectedFile) return;
-
-    setCompressing(true);
-    const compressed = await compressImage(selectedFile);
-    setCompressing(false);
-
-    const formData = new FormData();
-    formData.set("image", compressed);
-
-    startTransition(async () => {
-      try {
-        await updateImageAction(formData);
-        router.refresh();
-        showToast(`${item.code} image saved`, "success");
-      } catch (err) {
-        showToast(err instanceof Error ? err.message : "Failed to save image", "error");
       }
     });
   }
@@ -179,7 +185,7 @@ export default function HomepageProgramCard({
           )}
         </div>
 
-        <form onSubmit={handleImageSubmit} className="mt-2 flex flex-col gap-2">
+        <div className="mt-2 flex flex-col gap-2">
           <input
             type="file"
             accept="image/*"
@@ -187,15 +193,9 @@ export default function HomepageProgramCard({
             onChange={handleFileChange}
             className="text-xs text-charcoal/60 file:mr-2 file:border-0 file:bg-ink/5 file:px-2.5 file:py-1.5 file:text-xs file:font-medium file:text-ink hover:file:bg-ink/10 disabled:opacity-50"
           />
-          <AdminButton
-            type="submit"
-            variant="secondary"
-            disabled={!selectedFile || isBusy}
-            className="justify-center gap-2 px-3 py-1.5 text-xs"
-          >
-            {isBusy && <Loader2 size={13} className="animate-spin" />}
-            {compressing ? "Compressing…" : item.image_url ? "Replace image" : "Upload image"}
-          </AdminButton>
+          <p className="text-[11px] text-charcoal/40">
+            {compressing ? "Processing…" : pending ? "Saving…" : "Choosing a file saves it immediately."}
+          </p>
           {item.image_url && (
             <AdminButton
               type="button"
@@ -207,7 +207,7 @@ export default function HomepageProgramCard({
               Remove image
             </AdminButton>
           )}
-        </form>
+        </div>
       </div>
 
       {/* Text fields */}
