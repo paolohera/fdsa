@@ -6,6 +6,7 @@ import { ImagePlus, MapPin, Pin, Star, Trash2 } from "lucide-react";
 import { AdminCard, AdminButton, AdminBadge } from "@/components/admin/admin-ui";
 import { deleteGalleryImage } from "./actions";
 import { MAX_GALLERY_IMAGES, type GalleryImage } from "@/lib/news-gallery";
+import { compressImage } from "@/lib/compress-image";
 
 type Priority = "normal" | "featured" | "pinned";
 
@@ -69,13 +70,22 @@ function GallerySection({
     });
   };
 
-  const handleFiles = (fileList: FileList | null) => {
+  const [isCompressing, setIsCompressing] = useState(false);
+
+  const handleFiles = async (fileList: FileList | null) => {
     if (!fileList || remainingSlots <= 0) return;
     const incoming = Array.from(fileList).slice(0, remainingSlots);
-    setNewFiles((prev) => [
-      ...prev,
-      ...incoming.map((file) => ({ file, preview: URL.createObjectURL(file) })),
-    ]);
+
+    setIsCompressing(true);
+    try {
+      const compressed = await Promise.all(incoming.map((file) => compressImage(file)));
+      setNewFiles((prev) => [
+        ...prev,
+        ...compressed.map((file) => ({ file, preview: URL.createObjectURL(file) })),
+      ]);
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const removeNewFile = (index: number) => {
@@ -149,13 +159,18 @@ function GallerySection({
         ))}
 
         {remainingSlots > 0 && (
-          <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 border border-dashed border-ink/20 text-charcoal/40 transition-colors hover:border-brass/50">
+          <label
+            className={`flex aspect-square flex-col items-center justify-center gap-1 border border-dashed border-ink/20 text-charcoal/40 transition-colors ${
+              isCompressing ? "cursor-wait opacity-60" : "cursor-pointer hover:border-brass/50"
+            }`}
+          >
             <ImagePlus size={18} />
-            <span className="text-[10px]">Add</span>
+            <span className="text-[10px]">{isCompressing ? "Processing…" : "Add"}</span>
             <input
               type="file"
               accept="image/*"
               multiple
+              disabled={isCompressing}
               className="sr-only"
               onChange={(e) => handleFiles(e.target.files)}
             />
@@ -184,6 +199,27 @@ export default function PostForm({
   const [published, setPublished] = useState(defaultValues?.published ?? false);
   const [priority, setPriority] = useState<Priority>(defaultValues?.priority ?? "normal");
   const [preview, setPreview] = useState<string | null>(defaultValues?.image_url ?? null);
+  const [coverCompressing, setCoverCompressing] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setCoverCompressing(true);
+    try {
+      const compressed = await compressImage(file);
+      setPreview(URL.createObjectURL(compressed));
+
+      // Swap the compressed file back into the actual input so it's what
+      // gets submitted, since we can't reassign e.target.files directly.
+      const dt = new DataTransfer();
+      dt.items.add(compressed);
+      if (coverInputRef.current) coverInputRef.current.files = dt.files;
+    } finally {
+      setCoverCompressing(false);
+    }
+  };
 
   return (
     <form action={action}>
@@ -324,7 +360,7 @@ export default function PostForm({
               Featured image
             </h3>
 
-            <label className="mt-4 block cursor-pointer">
+            <label className={`mt-4 block ${coverCompressing ? "cursor-wait" : "cursor-pointer"}`}>
               <div className="group relative aspect-[4/3] w-full overflow-hidden border border-dashed border-ink/20 bg-ink/[0.02] transition-colors hover:border-brass/50">
                 {preview ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -336,18 +372,17 @@ export default function PostForm({
                   </div>
                 )}
                 <div className="absolute inset-0 flex items-center justify-center bg-ink/60 text-xs font-medium text-parchment opacity-0 transition-opacity group-hover:opacity-100">
-                  {preview ? "Replace image" : "Choose file"}
+                  {coverCompressing ? "Processing…" : preview ? "Replace image" : "Choose file"}
                 </div>
               </div>
               <input
+                ref={coverInputRef}
                 type="file"
                 name="image"
                 accept="image/*"
+                disabled={coverCompressing}
                 className="sr-only"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) setPreview(URL.createObjectURL(file));
-                }}
+                onChange={handleCoverChange}
               />
             </label>
             <p className="mt-2 text-xs text-charcoal/40">

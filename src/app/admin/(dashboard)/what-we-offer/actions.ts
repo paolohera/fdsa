@@ -151,6 +151,35 @@ export async function deleteHomepageProgram(id: string, storagePath: string | nu
   revalidatePath("/");
 }
 
+// Mutually exclusive — featuring a card automatically un-features whichever
+// one currently holds it, so there's never more than one at a time.
+export async function toggleHomepageProgramFeatured(id: string, currentlyFeatured: boolean) {
+  const supabase = await createClient();
+
+  if (currentlyFeatured) {
+    const { error } = await supabase
+      .from("homepage_programs")
+      .update({ is_featured: false })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error: clearError } = await supabase
+      .from("homepage_programs")
+      .update({ is_featured: false })
+      .neq("id", id);
+    if (clearError) throw new Error(clearError.message);
+
+    const { error: setError } = await supabase
+      .from("homepage_programs")
+      .update({ is_featured: true })
+      .eq("id", id);
+    if (setError) throw new Error(setError.message);
+  }
+
+  revalidatePath("/admin/what-we-offer");
+  revalidatePath("/");
+}
+
 export async function moveHomepageProgram(id: string, direction: "up" | "down") {
   const supabase = await createClient();
 

@@ -6,6 +6,7 @@ import {
   removeHomepageProgramImage,
   deleteHomepageProgram,
   moveHomepageProgram,
+  toggleHomepageProgramFeatured,
 } from "./actions";
 import { AdminPageHeader, AdminCard } from "@/components/admin/admin-ui";
 import HomepageProgramCard from "./homepage-program-card";
@@ -16,7 +17,9 @@ export default async function WhatWeOfferPage() {
 
   const { data: programs } = await supabase
     .from("homepage_programs")
-    .select("id, code, track, name, description, image_url, storage_path, link_href, sort_order")
+    .select(
+      "id, code, track, name, description, image_url, storage_path, link_href, sort_order, is_featured"
+    )
     .order("sort_order", { ascending: true });
 
   const items = programs ?? [];
@@ -25,7 +28,7 @@ export default async function WhatWeOfferPage() {
     <div>
       <AdminPageHeader
         title="What We Offer"
-        description="Controls the program cards shown on the homepage, under the Academics / What We Offer heading."
+        description="Controls the program cards shown on the homepage, under the Academics / What We Offer heading. Feature a card to always show it first."
       />
 
       <div className="space-y-4">
@@ -41,6 +44,11 @@ export default async function WhatWeOfferPage() {
             deleteAction={deleteHomepageProgram.bind(null, item.id, item.storage_path)}
             moveUpAction={moveHomepageProgram.bind(null, item.id, "up")}
             moveDownAction={moveHomepageProgram.bind(null, item.id, "down")}
+            toggleFeaturedAction={toggleHomepageProgramFeatured.bind(
+              null,
+              item.id,
+              item.is_featured
+            )}
           />
         ))}
 

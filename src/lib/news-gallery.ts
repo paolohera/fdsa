@@ -1,4 +1,4 @@
-export const MAX_GALLERY_IMAGES = 10;
+export const MAX_GALLERY_IMAGES = 25;
 
 export type GalleryImage = {
   id: string;

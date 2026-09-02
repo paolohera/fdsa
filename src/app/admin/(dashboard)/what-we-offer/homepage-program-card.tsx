@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowUp, ArrowDown, Save } from "lucide-react";
-import { AdminCard, AdminButton } from "@/components/admin/admin-ui";
+import { Loader2, ArrowUp, ArrowDown, Save, Star } from "lucide-react";
+import { AdminCard, AdminButton, AdminBadge } from "@/components/admin/admin-ui";
 import { compressImage } from "@/lib/compress-image";
 import { useAdminToast } from "@/components/admin/admin-toast";
 import ConfirmModal from "@/components/admin/confirm-modal";
@@ -18,6 +18,7 @@ type HomepageProgram = {
   storage_path: string | null;
   link_href: string;
   sort_order: number;
+  is_featured: boolean;
 };
 
 export default function HomepageProgramCard({
@@ -30,6 +31,7 @@ export default function HomepageProgramCard({
   deleteAction,
   moveUpAction,
   moveDownAction,
+  toggleFeaturedAction,
 }: {
   item: HomepageProgram;
   isFirst: boolean;
@@ -40,12 +42,14 @@ export default function HomepageProgramCard({
   deleteAction: () => Promise<void>;
   moveUpAction: () => Promise<void>;
   moveDownAction: () => Promise<void>;
+  toggleFeaturedAction: () => Promise<void>;
 }) {
   const router = useRouter();
   const [preview, setPreview] = useState<string | null>(item.image_url);
   const [compressing, setCompressing] = useState(false);
   const [pending, startTransition] = useTransition();
   const [reordering, startReorder] = useTransition();
+  const [togglingFeatured, startFeaturedToggle] = useTransition();
   const { showToast } = useAdminToast();
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -122,6 +126,21 @@ export default function HomepageProgramCard({
     });
   }
 
+  function handleToggleFeatured() {
+    startFeaturedToggle(async () => {
+      try {
+        await toggleFeaturedAction();
+        router.refresh();
+        showToast(
+          item.is_featured ? `${item.code} unfeatured` : `${item.code} is now featured`,
+          "success"
+        );
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to update featured card", "error");
+      }
+    });
+  }
+
   function handleDelete() {
     return new Promise<void>((resolve) => {
       startTransition(async () => {
@@ -140,7 +159,11 @@ export default function HomepageProgramCard({
   const isBusy = compressing || pending;
 
   return (
-    <AdminCard className="grid grid-cols-1 gap-6 p-5 sm:grid-cols-12 sm:items-start">
+    <AdminCard
+      className={`grid grid-cols-1 gap-6 p-5 sm:grid-cols-12 sm:items-start ${
+        item.is_featured ? "ring-1 ring-brass" : ""
+      }`}
+    >
       {/* Reorder */}
       <div className="flex flex-row gap-2 sm:col-span-1 sm:flex-col">
         <AdminButton
@@ -181,6 +204,14 @@ export default function HomepageProgramCard({
           {isBusy && (
             <div className="absolute inset-0 flex items-center justify-center bg-ink/20">
               <Loader2 size={24} className="animate-spin text-parchment" />
+            </div>
+          )}
+          {item.is_featured && (
+            <div className="absolute left-2 top-2">
+              <AdminBadge tone="brass">
+                <Star size={11} className="mr-1 inline fill-current" />
+                Featured
+              </AdminBadge>
             </div>
           )}
         </div>
@@ -248,12 +279,30 @@ export default function HomepageProgramCard({
           className="col-span-2 border border-ink/20 px-2.5 py-1.5 text-sm outline-none focus:border-brass"
         />
 
-        <div className="col-span-2 flex items-center justify-between pt-1">
-          <AdminButton type="submit" disabled={pending} className="gap-2 px-3 py-1.5 text-xs">
-            {pending && <Loader2 size={13} className="animate-spin" />}
-            <Save size={13} />
-            Save details
-          </AdminButton>
+        <div className="col-span-2 flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div className="flex items-center gap-2">
+            <AdminButton type="submit" disabled={pending} className="gap-2 px-3 py-1.5 text-xs">
+              {pending && <Loader2 size={13} className="animate-spin" />}
+              <Save size={13} />
+              Save details
+            </AdminButton>
+
+            <AdminButton
+              type="button"
+              variant={item.is_featured ? "primary" : "secondary"}
+              disabled={togglingFeatured}
+              onClick={handleToggleFeatured}
+              className="gap-2 px-3 py-1.5 text-xs"
+              title={item.is_featured ? "Unfeature this card" : "Feature this card — shows first on the homepage"}
+            >
+              {togglingFeatured ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <Star size={13} className={item.is_featured ? "fill-current" : ""} />
+              )}
+              {item.is_featured ? "Featured" : "Feature"}
+            </AdminButton>
+          </div>
 
           <ConfirmModal
             title={`Delete ${item.code} card?`}

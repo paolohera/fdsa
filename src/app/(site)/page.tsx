@@ -44,9 +44,12 @@ export default async function HomePage() {
     .maybeSingle();
 
   // "What We Offer" homepage cards — admin-managed via /admin/what-we-offer.
+  // Featured cards (is_featured) always render first, then the rest in
+  // their manually-set sort_order.
   const { data: featuredProgramsData } = await supabase
     .from("homepage_programs")
-    .select("id, code, track, name, description, image_url, link_href")
+    .select("id, code, track, name, description, image_url, link_href, is_featured")
+    .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true });
 
   const featuredPrograms = featuredProgramsData ?? [];
