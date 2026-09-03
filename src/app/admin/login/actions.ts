@@ -6,12 +6,29 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { verifyTurnstile } from "@/lib/verify-turnstile";
 import { loginRatelimit, getClientIp } from "@/lib/rate-limit";
+import { verifyCsrfToken, getCsrfTokenFromHeaders } from "@/lib/csrf";
+
+async function verifyCsrf(formData: FormData): Promise<boolean> {
+  const headersList = await headers();
+  const token = await getCsrfTokenFromHeaders(headersList) ?? formData.get("csrf_token")?.toString() ?? null;
+  return verifyCsrfToken(token);
+}
+
+function sanitizeError(error: unknown): string {
+  if (error instanceof Error) {
+    const message = error.message;
+    if (message.includes("Invalid login credentials") || message.includes("Email not confirmed")) {
+      return message;
+    }
+  }
+  return "An error occurred. Please try again.";
+}
 
 export async function login(formData: FormData) {
   const headersList = await headers();
   const ip = getClientIp(headersList);
 
-  const { success } = await loginRatelimit.limit(ip);
+  const { success } = await loginRatelimit.limit(`login:${ip}`);
   if (!success) {
     redirect(`/admin/login?error=${encodeURIComponent("Too many attempts. Please wait a minute and try again.")}`);
   }
@@ -22,6 +39,11 @@ export async function login(formData: FormData) {
     redirect(`/admin/login?error=${encodeURIComponent("Verification failed. Please try again.")}`);
   }
 
+  const csrfValid = await verifyCsrf(formData);
+  if (!csrfValid) {
+    redirect(`/admin/login?error=${encodeURIComponent("Invalid request. Please refresh and try again.")}`);
+  }
+
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
@@ -30,7 +52,7 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    redirect(`/admin/login?error=${encodeURIComponent(error.message)}`);
+    redirect(`/admin/login?error=${encodeURIComponent(sanitizeError(error))}`);
   }
 
   revalidatePath("/admin", "layout");
@@ -54,7 +76,7 @@ export async function loginModal(
   const headersList = await headers();
   const ip = getClientIp(headersList);
 
-  const { success } = await loginRatelimit.limit(ip);
+  const { success } = await loginRatelimit.limit(`login:${ip}`);
   if (!success) {
     return { error: "Too many attempts. Please wait a minute and try again." };
   }
@@ -65,6 +87,11 @@ export async function loginModal(
     return { error: "Verification failed. Please try again." };
   }
 
+  const csrfValid = await verifyCsrf(formData);
+  if (!csrfValid) {
+    return { error: "Invalid request. Please refresh and try again." };
+  }
+
   const supabase = await createClient();
 
   const email = formData.get("email") as string;
@@ -73,7 +100,7 @@ export async function loginModal(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return { error: error.message };
+    return { error: sanitizeError(error) };
   }
 
   revalidatePath("/admin", "layout");

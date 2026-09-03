@@ -1,8 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { generalRatelimit, loginRatelimit, getClientIp } from "@/lib/rate-limit";
+import { securityHeadersMiddleware } from "@/lib/security-headers";
 
 export async function proxy(request: NextRequest) {
+  // Apply security headers first
+  const response = securityHeadersMiddleware();
+
   const ip = getClientIp(request.headers);
   const { pathname } = request.nextUrl;
 
@@ -12,8 +16,9 @@ export async function proxy(request: NextRequest) {
   // Stricter limit for repeated hits on the login route itself (covers GET
   // page loads too, not just the POST from the login server action — this
   // stops bots from even loading the login page in a tight loop).
+  // Uses same key prefix as login action to prevent bypassing one by hitting the other.
   if (isAdminLogin) {
-    const { success } = await loginRatelimit.limit(`page:${ip}`);
+    const { success } = await loginRatelimit.limit(`login:${ip}`);
     if (!success) {
       return new NextResponse("Too many requests. Please slow down.", {
         status: 429,
@@ -36,7 +41,14 @@ export async function proxy(request: NextRequest) {
   }
 
   // Existing Supabase session refresh + /admin route protection.
-  return await updateSession(request);
+  const sessionResponse = await updateSession(request);
+
+  // Merge headers from session response into our security headers response
+  sessionResponse.headers.forEach((value, key) => {
+    response.headers.set(key, value);
+  });
+
+  return response;
 }
 
 export const config = {

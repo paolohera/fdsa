@@ -57,13 +57,59 @@ export const enrollRatelimit = new Ratelimit({
   analytics: true,
 });
 
-// Vercel puts the real client IP in this header. Falls back to a generic
-// bucket if it's ever missing (e.g. local dev), so rate limiting doesn't
-// crash — it just becomes a shared bucket for all local requests.
+/**
+ * Extracts client IP from headers.
+ * 
+ * SECURITY NOTE: This function trusts x-forwarded-for and x-real-ip headers.
+ * It MUST only be used when the application is deployed behind a trusted
+ * proxy (e.g., Vercel, Cloudflare, AWS ALB) that sets these headers and
+ * strips any client-supplied values. In Vercel/Next.js, these headers are
+ * automatically set by the platform infrastructure.
+ * 
+ * If deploying elsewhere without a trusted proxy, replace this with a
+ * platform-specific IP detection method or use a fixed "unknown" bucket.
+ */
 export function getClientIp(headers: Headers): string {
-  return (
-    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    headers.get("x-real-ip") ??
-    "unknown"
-  );
+  // Vercel sets x-forwarded-for with the original client IP as the first value
+  const forwardedFor = headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const ips = forwardedFor.split(",").map(ip => ip.trim());
+    // Return the first (original client) IP
+    return ips[0];
+  }
+
+  // Fallback for other proxies that use x-real-ip
+  const realIp = headers.get("x-real-ip");
+  if (realIp) {
+    return realIp.trim();
+  }
+
+  // Fallback for local development or misconfigured deployments
+  // Using a shared bucket limits DoS impact
+  return "unknown";
+}
+
+/**
+ * Validates that an IP address is a reasonable format (not spoofed).
+ * Only use this if you cannot trust your proxy headers.
+ */
+export function isValidIp(ip: string): boolean {
+  if (ip === "unknown") return true; // Allow unknown bucket
+  
+  // Basic IPv4 validation
+  const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (ipv4Regex.test(ip)) {
+    const parts = ip.split(".").map(Number);
+    return parts.every(part => part >= 0 && part <= 255);
+  }
+
+  // Basic IPv6 validation (simplified)
+  const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+  if (ipv6Regex.test(ip)) return true;
+
+  // Compressed IPv6 (::)
+  const compressedIpv6Regex = /^([0-9a-fA-F]{1,4}:)*::([0-9a-fA-F]{1,4}:)*[0-9a-fA-F]{1,4}$/;
+  if (compressedIpv6Regex.test(ip)) return true;
+
+  return false;
 }

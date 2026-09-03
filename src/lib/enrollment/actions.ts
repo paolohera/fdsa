@@ -4,11 +4,22 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { verifyTurnstile } from "@/lib/verify-turnstile";
 import { enrollRatelimit, getClientIp } from "@/lib/rate-limit";
+import { verifyCsrfToken, getCsrfTokenFromHeaders } from "@/lib/csrf";
 
 export type EnrollFormState = {
   status: "idle" | "success" | "error";
   message: string;
 };
+
+function sanitizeError(error: unknown): string {
+  console.error("Enrollment error:", error);
+  return "Something went wrong. Please try again.";
+}
+
+async function verifyCsrf(formData: FormData, headersList: Headers): Promise<boolean> {
+  const token = await getCsrfTokenFromHeaders(headersList) ?? formData.get("csrf_token")?.toString() ?? null;
+  return verifyCsrfToken(token);
+}
 
 export async function submitEnrollment(
   _prevState: EnrollFormState,
@@ -31,6 +42,11 @@ export async function submitEnrollment(
   const isHuman = await verifyTurnstile(turnstileToken, ip);
   if (!isHuman) {
     return { status: "error", message: "Verification failed. Please try again." };
+  }
+
+  const csrfValid = await verifyCsrf(formData, headersList);
+  if (!csrfValid) {
+    return { status: "error", message: "Invalid request. Please refresh and try again." };
   }
 
   const programCode = formData.get("program_code")?.toString() || null;
@@ -60,8 +76,7 @@ export async function submitEnrollment(
   });
 
   if (error) {
-    console.error("Enrollment insert failed:", error);
-    return { status: "error", message: "Something went wrong. Please try again." };
+    return { status: "error", message: sanitizeError(error) };
   }
 
   return {

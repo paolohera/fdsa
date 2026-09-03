@@ -12,10 +12,26 @@ export default function SecretLoginModal() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [csrfToken, setCsrfToken] = useState<string>("");
 
   const pressTimesRef = useRef<number[]>([]);
   const emailInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Fetch CSRF token when modal opens
+  useEffect(() => {
+    if (!open) return;
+    async function fetchCsrfToken() {
+      try {
+        const res = await fetch("/api/csrf");
+        const data = await res.json();
+        setCsrfToken(data.token || "");
+      } catch {
+        // Token fetch failed, form submission will fail with CSRF error
+      }
+    }
+    fetchCsrfToken();
+  }, [open]);
 
   // Watch for 3 spacebar presses in quick succession, anywhere on the page,
   // as long as the person isn't typing into a field.
@@ -70,6 +86,8 @@ export default function SecretLoginModal() {
     setSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
+    // Add CSRF token to form data
+    formData.append("csrf_token", csrfToken);
     const result = await loginModal(formData);
 
     setSubmitting(false);
@@ -84,7 +102,7 @@ export default function SecretLoginModal() {
     router.refresh();
   }
 
- if (!open) return null;
+  if (!open) return null;
 
   return (
     <div
@@ -126,6 +144,8 @@ export default function SecretLoginModal() {
               {error}
             </p>
           )}
+
+          <input type="hidden" name="csrf_token" value={csrfToken} />
 
           <div>
             <label
