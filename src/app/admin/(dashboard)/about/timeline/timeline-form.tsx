@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Loader2 } from "lucide-react";
 import { AdminCard, AdminButton } from "@/components/admin/admin-ui";
+import { useFormAction } from "@/hooks/useFormAction";
 
 type TimelineFormProps = {
-  action: (formData: FormData) => void;
+  action: (formData: FormData) => Promise<void>;
   defaultValues?: {
     year: string;
     title: string;
@@ -17,9 +18,20 @@ type TimelineFormProps = {
 
 export default function TimelineForm({ action, defaultValues, error }: TimelineFormProps) {
   const [preview, setPreview] = useState<string | null>(defaultValues?.image_url ?? null);
+  const { submit, pending } = useFormAction({
+    action,
+    successMessage: defaultValues ? "Timeline entry updated" : "Timeline entry created",
+    errorMessage: "Failed to save timeline entry",
+  });
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    submit(formData);
+  }
 
   return (
-    <form action={action}>
+    <form onSubmit={handleSubmit}>
       {error && (
         <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
       )}
@@ -63,8 +75,9 @@ export default function TimelineForm({ action, defaultValues, error }: TimelineF
               />
             </label>
 
-            <AdminButton type="submit" className="mt-5">
-              Save
+            <AdminButton type="submit" disabled={pending} className="mt-5">
+              {pending && <Loader2 size={14} className="animate-spin mr-1" />}
+              {pending ? "Saving…" : "Save"}
             </AdminButton>
           </AdminCard>
         </div>
@@ -94,6 +107,7 @@ export default function TimelineForm({ action, defaultValues, error }: TimelineF
                 type="file"
                 name="image"
                 accept="image/*"
+                disabled={pending}
                 className="sr-only"
                 onChange={(e) => {
                   const file = e.target.files?.[0];

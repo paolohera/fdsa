@@ -13,16 +13,10 @@ type NavLink = {
   children?: { href: string; label: string }[];
 };
 
-const PROGRAM_TRACKS: NonNullable<NavLink["children"]> = [
-  { href: "/programs/baccalaureate", label: "Baccalaureate" },
-  { href: "/programs/two-year-technical", label: "Two-Year Technical" },
-  { href: "/programs/senior-high-school", label: "Senior High School" },
-];
-
 const NAV_LEFT: NavLink[] = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/programs", label: "Programs", children: PROGRAM_TRACKS },
+  { href: "/programs", label: "Programs" },
   { href: "/facilities", label: "Facilities" },
 ];
 

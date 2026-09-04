@@ -65,7 +65,7 @@ export default async function AdminLayout({
   const { count: openChats } = await supabase
     .from("chat_conversations")
     .select("*", { count: "exact", head: true })
-    .eq("status", "open");
+    .gt("unread_count", 0);
 
   const { count: newApplications } = await supabase
     .from("enrollment_submissions")
@@ -84,7 +84,7 @@ export default async function AdminLayout({
   const { data: recentChats } = await supabase
     .from("chat_conversations")
     .select("id, visitor_name, last_message_at")
-    .eq("status", "open")
+    .gt("unread_count", 0)
     .order("last_message_at", { ascending: false })
     .limit(5);
 

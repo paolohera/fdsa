@@ -12,6 +12,7 @@ import {
   AdminButton,
   AdminEmptyState,
 } from "@/components/admin/admin-ui";
+import NewsRowActions from "./news-row-actions";
 
 export default async function NewsListPage({
   searchParams,
@@ -113,32 +114,7 @@ export default async function NewsListPage({
                 </div>
               </div>
 
-              {/* Quick priority toggles — jump straight to pinned/featured/normal
-                  without opening the edit form. */}
-              <div className="hidden items-center gap-1 sm:flex">
-                <form action={setPostPriority.bind(null, post.id, post.priority === "pinned" ? "normal" : "pinned")}>
-                  <AdminButton
-                    variant={post.priority === "pinned" ? "primary" : "ghost"}
-                    title={post.priority === "pinned" ? "Unpin" : "Pin to top"}
-                  >
-                    <Pin size={14} />
-                  </AdminButton>
-                </form>
-                <form action={setPostPriority.bind(null, post.id, post.priority === "featured" ? "normal" : "featured")}>
-                  <AdminButton
-                    variant={post.priority === "featured" ? "primary" : "ghost"}
-                    title={post.priority === "featured" ? "Unfeature" : "Feature on hero"}
-                  >
-                    <Star size={14} />
-                  </AdminButton>
-                </form>
-              </div>
-
-              <form action={deletePost.bind(null, post.id)}>
-                <AdminButton variant="danger">
-                  <Trash2 size={15} />
-                </AdminButton>
-              </form>
+              <NewsRowActions post={post} />
             </div>
           ))}
         </AdminCard>

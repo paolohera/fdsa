@@ -5,6 +5,7 @@ import ScrollReveal from "@/components/scroll-reveal";
 import ScrollStagger from "@/components/scroll-stagger";
 import NewsCard from "@/components/news-card";
 import NewsCoverflow from "@/components/news-coverflow";
+import FeaturedProgramCarousel from "@/components/featured-program-carousel";
 import { sortByPriority } from "@/lib/news-priority";
 
 export const revalidate = 60; // re-check for new published posts every 60s
@@ -44,12 +45,31 @@ export default async function HomePage() {
     .maybeSingle();
 
   // "What We Offer" homepage cards — admin-managed via /admin/what-we-offer.
-  // Featured cards (is_featured) always render first, then the rest in
-  // their manually-set sort_order.
+  // The featured program (if any) is fetched separately, with its gallery,
+  // to power the big carousel above the list.
+  const { data: featuredProgramData } = await supabase
+    .from("homepage_programs")
+    .select(
+      "code, track, name, description, image_url, link_href, homepage_program_images(image_url, sort_order)"
+    )
+    .eq("is_featured", true)
+    .maybeSingle();
+
+  const featuredProgram = featuredProgramData
+    ? {
+        ...featuredProgramData,
+        galleryImages: (featuredProgramData.homepage_program_images ?? [])
+          .slice()
+          .sort((a, b) => a.sort_order - b.sort_order),
+      }
+    : null;
+
+  // Everything else — the featured program (already shown above) is
+  // excluded here so it doesn't appear twice.
   const { data: featuredProgramsData } = await supabase
     .from("homepage_programs")
-    .select("id, code, track, name, description, image_url, link_href, is_featured")
-    .order("is_featured", { ascending: false })
+    .select("id, code, track, name, description, image_url, link_href")
+    .eq("is_featured", false)
     .order("sort_order", { ascending: true });
 
   const featuredPrograms = featuredProgramsData ?? [];
@@ -161,7 +181,16 @@ export default async function HomePage() {
           </div>
         </ScrollReveal>
 
-        {featuredPrograms.length === 0 ? (
+        {featuredProgram && (
+          <div className="mt-10">
+            <FeaturedProgramCarousel
+              program={featuredProgram}
+              galleryImages={featuredProgram.galleryImages}
+            />
+          </div>
+        )}
+
+        {featuredPrograms.length === 0 && !featuredProgram ? (
           <p className="mt-8 text-sm text-charcoal/60">
             No programs added yet. Add one from /admin/what-we-offer.
           </p>

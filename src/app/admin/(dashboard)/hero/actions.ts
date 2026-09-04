@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 function randomFileName(originalName: string) {
@@ -14,7 +13,7 @@ export async function updateHeroImage(formData: FormData) {
 
   const file = formData.get("image") as File | null;
   if (!file || file.size === 0) {
-    redirect("/admin/hero?error=Please choose an image file.");
+    throw new Error("Please choose an image file.");
   }
 
   const { data: existing } = await supabase
@@ -29,7 +28,7 @@ export async function updateHeroImage(formData: FormData) {
     .upload(path, file);
 
   if (uploadError) {
-    redirect(`/admin/hero?error=${encodeURIComponent(uploadError.message)}`);
+    throw new Error(uploadError.message);
   }
 
   const {
@@ -43,7 +42,7 @@ export async function updateHeroImage(formData: FormData) {
       .eq("id", existing.id);
 
     if (updateError) {
-      redirect(`/admin/hero?error=${encodeURIComponent(updateError.message)}`);
+      throw new Error(updateError.message);
     }
 
     if (existing.storage_path) {
@@ -55,11 +54,10 @@ export async function updateHeroImage(formData: FormData) {
       .insert({ image_url: publicUrl, storage_path: path });
 
     if (insertError) {
-      redirect(`/admin/hero?error=${encodeURIComponent(insertError.message)}`);
+      throw new Error(insertError.message);
     }
   }
 
   revalidatePath("/admin/hero");
   revalidatePath("/");
-  redirect("/admin/hero");
 }

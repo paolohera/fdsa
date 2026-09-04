@@ -7,6 +7,8 @@ import {
   deleteHomepageProgram,
   moveHomepageProgram,
   toggleHomepageProgramFeatured,
+  addHomepageProgramGalleryImages,
+  deleteHomepageProgramGalleryImage,
 } from "./actions";
 import { AdminPageHeader, AdminCard } from "@/components/admin/admin-ui";
 import HomepageProgramCard from "./homepage-program-card";
@@ -18,17 +20,22 @@ export default async function WhatWeOfferPage() {
   const { data: programs } = await supabase
     .from("homepage_programs")
     .select(
-      "id, code, track, name, description, image_url, storage_path, link_href, sort_order, is_featured"
+      "id, code, track, name, description, image_url, storage_path, link_href, sort_order, is_featured, homepage_program_images(id, image_url, storage_path, sort_order)"
     )
     .order("sort_order", { ascending: true });
 
-  const items = programs ?? [];
+  const items = (programs ?? []).map((item) => ({
+    ...item,
+    homepage_program_images: (item.homepage_program_images ?? [])
+      .slice()
+      .sort((a, b) => a.sort_order - b.sort_order),
+  }));
 
   return (
     <div>
       <AdminPageHeader
         title="What We Offer"
-        description="Controls the program cards shown on the homepage, under the Academics / What We Offer heading. Feature a card to always show it first."
+        description="Controls the program cards shown on the homepage, under the Academics / What We Offer heading. Feature a card to show it as the big carousel above the list."
       />
 
       <div className="space-y-4">
@@ -49,6 +56,9 @@ export default async function WhatWeOfferPage() {
               item.id,
               item.is_featured
             )}
+            galleryImages={item.homepage_program_images}
+            addGalleryAction={addHomepageProgramGalleryImages.bind(null, item.id)}
+            deleteGalleryImageAction={deleteHomepageProgramGalleryImage}
           />
         ))}
 

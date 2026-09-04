@@ -6,13 +6,6 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { verifyTurnstile } from "@/lib/verify-turnstile";
 import { loginRatelimit, getClientIp } from "@/lib/rate-limit";
-import { verifyCsrfToken, getCsrfTokenFromHeaders } from "@/lib/csrf";
-
-async function verifyCsrf(formData: FormData): Promise<boolean> {
-  const headersList = await headers();
-  const token = await getCsrfTokenFromHeaders(headersList) ?? formData.get("csrf_token")?.toString() ?? null;
-  return verifyCsrfToken(token);
-}
 
 function sanitizeError(error: unknown): string {
   if (error instanceof Error) {
@@ -37,11 +30,6 @@ export async function login(formData: FormData) {
   const isHuman = await verifyTurnstile(turnstileToken, ip);
   if (!isHuman) {
     redirect(`/admin/login?error=${encodeURIComponent("Verification failed. Please try again.")}`);
-  }
-
-  const csrfValid = await verifyCsrf(formData);
-  if (!csrfValid) {
-    redirect(`/admin/login?error=${encodeURIComponent("Invalid request. Please refresh and try again.")}`);
   }
 
   const supabase = await createClient();
@@ -85,11 +73,6 @@ export async function loginModal(
   const isHuman = await verifyTurnstile(turnstileToken, ip);
   if (!isHuman) {
     return { error: "Verification failed. Please try again." };
-  }
-
-  const csrfValid = await verifyCsrf(formData);
-  if (!csrfValid) {
-    return { error: "Invalid request. Please refresh and try again." };
   }
 
   const supabase = await createClient();

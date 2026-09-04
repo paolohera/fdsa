@@ -11,7 +11,7 @@ export default function ProgramImageForm({
   currentImageUrl,
   code,
 }: {
-  action: (formData: FormData) => void;
+  action: (formData: FormData) => Promise<void>;
   currentImageUrl?: string | null;
   code: string;
 }) {

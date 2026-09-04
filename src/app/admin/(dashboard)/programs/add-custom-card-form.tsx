@@ -10,7 +10,7 @@ export default function AddCustomCardForm({
   action,
   remainingSlots,
 }: {
-  action: (formData: FormData) => void;
+  action: (formData: FormData) => Promise<void>;
   remainingSlots: number;
 }) {
   const [pending, startTransition] = useTransition();

@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, Mail, MessageCircle, ClipboardCheck } from "lucide-react";
+import { Bell, Mail, MessageCircle, ClipboardCheck, CheckCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { markMessageRead, markApplicationReviewed } from "@/lib/notifications/actions";
+import { markMessageRead, markApplicationReviewed, markAllMessagesRead, markAllApplicationsReviewed } from "@/lib/notifications/actions";
+import { useAdminToast } from "@/components/admin/admin-toast";
 
 type RecentMessage = { id: string; name: string; message: string; created_at: string };
 type RecentChat = { id: string; visitor_name: string; last_message_at: string };
@@ -60,6 +61,30 @@ export default function AdminNotificationBell({
   // and decrement the badge without touching the conversation's status.
   const [dismissedChatIds, setDismissedChatIds] = useState<Set<string>>(new Set());
 
+  const { showToast } = useAdminToast();
+
+  async function handleMarkAllMessagesRead() {
+    try {
+      await markAllMessagesRead();
+      setUnreadMessages(0);
+      setRecentMessages([]);
+      showToast("All messages marked as read", "success");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Failed to mark all messages read", "error");
+    }
+  }
+
+  async function handleMarkAllApplicationsReviewed() {
+    try {
+      await markAllApplicationsReviewed();
+      setNewApplications(0);
+      setRecentApplications([]);
+      showToast("All applications marked as reviewed", "success");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Failed to mark all applications reviewed", "error");
+    }
+  }
+
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -86,15 +111,14 @@ export default function AdminNotificationBell({
       setUnreadMessages(count ?? 0);
     }
 
-    async function refreshChats() {
-      const { data, count } = await supabase
+    async function refreshChatsList() {
+      const { data } = await supabase
         .from("chat_conversations")
-        .select("id, visitor_name, last_message_at", { count: "exact" })
-        .eq("status", "open")
+        .select("id, visitor_name, last_message_at, unread_count")
+        .gt("unread_count", 0)
         .order("last_message_at", { ascending: false })
         .limit(5);
       setRecentChats(data ?? []);
-      setOpenChats(count ?? 0);
     }
 
     async function refreshApplications() {
@@ -108,14 +132,55 @@ export default function AdminNotificationBell({
       setNewApplications(count ?? 0);
     }
 
+    async function handleChatInsert(payload: { new: { id: string; unread_count: number } }) {
+      // New conversation started — increment badge if it has unread messages
+      if (payload.new.unread_count > 0) {
+        setOpenChats((prev) => prev + 1);
+        refreshChatsList();
+      }
+    }
+
+    async function handleChatUpdate(payload: { new: { id: string; unread_count: number }; old: { unread_count: number } }) {
+      // Unread count changed (visitor message added or admin replied)
+      const hadUnread = payload.old.unread_count > 0;
+      const hasUnread = payload.new.unread_count > 0;
+
+      if (!hadUnread && hasUnread) {
+        // Visitor sent a new message — increment badge
+        setOpenChats((prev) => prev + 1);
+      } else if (hadUnread && !hasUnread) {
+        // Admin replied or read — decrement badge if not already dismissed
+        setDismissedChatIds((prev) => {
+          if (!prev.has(payload.new.id)) {
+            setOpenChats((c) => Math.max(0, c - 1));
+          }
+          return prev;
+        });
+      }
+      refreshChatsList();
+    }
+
     const channel = supabase
       .channel("admin-notifications")
-      .on("postgres_changes", { event: "*", schema: "public", table: "contact_messages" }, refreshMessages)
-      .on("postgres_changes", { event: "*", schema: "public", table: "chat_conversations" }, refreshChats)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "contact_messages" },
+        refreshMessages as (payload: unknown) => void
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_conversations" },
+        handleChatInsert as (payload: unknown) => void
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "chat_conversations" },
+        handleChatUpdate as (payload: unknown) => void
+      )
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "enrollment_submissions" },
-        refreshApplications
+        refreshApplications as (payload: unknown) => void
       )
       .subscribe();
 
@@ -225,6 +290,29 @@ export default function AdminNotificationBell({
                   </span>
                 </Link>
               ))
+            )}
+          </div>
+
+          <div className="border-t border-ink/10 p-3 space-y-2">
+            {unreadMessages > 0 && (
+              <button
+                type="button"
+                onClick={handleMarkAllMessagesRead}
+                className="w-full flex items-center justify-center gap-2 text-xs font-medium text-charcoal/60 hover:text-ink"
+              >
+                <CheckCheck size={13} />
+                Mark all messages as read
+              </button>
+            )}
+            {newApplications > 0 && (
+              <button
+                type="button"
+                onClick={handleMarkAllApplicationsReviewed}
+                className="w-full flex items-center justify-center gap-2 text-xs font-medium text-charcoal/60 hover:text-ink"
+              >
+                <CheckCheck size={13} />
+                Mark all applications as reviewed
+              </button>
             )}
           </div>
 

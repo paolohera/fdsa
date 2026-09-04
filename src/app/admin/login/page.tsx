@@ -1,6 +1,5 @@
 import TurnstileWidget from "@/components/turnstile-widget";
 import { login } from "./actions";
-import { generateCsrfToken } from "@/lib/csrf";
 
 export default async function LoginPage({
   searchParams,
@@ -8,7 +7,6 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const csrfToken = await generateCsrfToken();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-ink px-4">
@@ -27,7 +25,6 @@ export default async function LoginPage({
           action={login}
           className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm"
         >
-          <input type="hidden" name="csrf_token" value={csrfToken} />
           {error && (
             <p className="rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-300">
               {error}

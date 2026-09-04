@@ -1,19 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { deleteSubmission } from "./actions";
-import DeleteSubmissionButton from "./delete-submission-button";
-import {
-  AdminPageHeader,
-  AdminCard,
-  AdminBadge,
-  AdminEmptyState,
-} from "@/components/admin/admin-ui";
-
-const STATUS_TONE: Record<string, "green" | "slate" | "brass"> = {
-  new: "brass",
-  reviewed: "slate",
-  contacted: "green",
-};
+import { AdminPageHeader, AdminCard, AdminBadge, AdminEmptyState } from "@/components/admin/admin-ui";
+import EnrollmentRow from "./enrollment-row";
 
 export default async function EnrollmentListPage() {
   const supabase = await createClient();
@@ -42,26 +30,9 @@ export default async function EnrollmentListPage() {
         <AdminEmptyState>No applications yet.</AdminEmptyState>
       ) : (
         <AdminCard className="divide-y divide-ink/10">
-          {submissions.map((s) => {
-            const data = s.data as Record<string, string>;
-            const displayName = data.full_name || data.name || "Unnamed applicant";
-            return (
-              <div key={s.id} className="flex items-center gap-4 p-4">
-                <Link href={`/admin/enrollment/${s.id}`} className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-ink hover:underline">{displayName}</p>
-                  <p className="mt-0.5 truncate text-xs text-charcoal/50">
-                    {s.program_name ?? "General inquiry"}
-                    {s.program_code ? ` (${s.program_code})` : ""}
-                  </p>
-                </Link>
-                <AdminBadge tone={STATUS_TONE[s.status] ?? "slate"}>{s.status}</AdminBadge>
-                <span className="w-24 shrink-0 text-right text-xs text-charcoal/40">
-                  {new Date(s.submitted_at).toLocaleDateString()}
-                </span>
-                <DeleteSubmissionButton id={s.id} name={displayName} deleteAction={deleteSubmission} />
-              </div>
-            );
-          })}
+          {submissions.map((s) => (
+            <EnrollmentRow key={s.id} submission={s} />
+          ))}
         </AdminCard>
       )}
     </div>

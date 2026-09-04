@@ -5,11 +5,12 @@
 "use client";
 
 import { useState } from "react";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Loader2 } from "lucide-react";
 import { AdminCard, AdminButton } from "@/components/admin/admin-ui";
+import { useFormAction } from "@/hooks/useFormAction";
 
 type EntryFormProps = {
-  action: (formData: FormData) => void;
+  action: (formData: FormData) => Promise<void>;
   label: string;
   defaultValues: {
     heading: string;
@@ -20,9 +21,20 @@ type EntryFormProps = {
 
 export default function VisionMissionEntryForm({ action, label, defaultValues }: EntryFormProps) {
   const [preview, setPreview] = useState<string | null>(defaultValues.image_url ?? null);
+  const { submit, pending } = useFormAction({
+    action,
+    successMessage: `${label} saved`,
+    errorMessage: `Failed to save ${label.toLowerCase()}`,
+  });
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    submit(formData);
+  }
 
   return (
-    <form action={action}>
+    <form onSubmit={handleSubmit}>
       <div className="grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-3">
         <div className="sm:col-span-2">
           <AdminCard className="h-full p-6">
@@ -50,8 +62,9 @@ export default function VisionMissionEntryForm({ action, label, defaultValues }:
               />
             </label>
 
-            <AdminButton type="submit" className="mt-5">
-              Save {label}
+            <AdminButton type="submit" disabled={pending} className="mt-5">
+              {pending && <Loader2 size={14} className="animate-spin mr-1" />}
+              {pending ? `Saving ${label}…` : `Save ${label}`}
             </AdminButton>
           </AdminCard>
         </div>
@@ -81,6 +94,7 @@ export default function VisionMissionEntryForm({ action, label, defaultValues }:
                 type="file"
                 name="image"
                 accept="image/*"
+                disabled={pending}
                 className="sr-only"
                 onChange={(e) => {
                   const file = e.target.files?.[0];

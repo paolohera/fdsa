@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowUp, ArrowDown, Save, Star } from "lucide-react";
+import { Loader2, ArrowUp, ArrowDown, Save, Star, ImagePlus, Trash2 } from "lucide-react";
 import { AdminCard, AdminButton, AdminBadge } from "@/components/admin/admin-ui";
 import { compressImage } from "@/lib/compress-image";
 import { useAdminToast } from "@/components/admin/admin-toast";
 import ConfirmModal from "@/components/admin/confirm-modal";
+import { MAX_PROGRAM_GALLERY_IMAGES, type ProgramGalleryImage } from "@/lib/homepage-gallery";
 
 type HomepageProgram = {
   id: string;
@@ -21,6 +22,166 @@ type HomepageProgram = {
   is_featured: boolean;
 };
 
+// Gallery photos for this card — separate from the single cover image
+// above. Available on every card (not just the featured one) so admins can
+// prep photos in advance before marking a card as featured.
+function GallerySection({
+  existingImages,
+  addAction,
+  deleteAction,
+}: {
+  existingImages: ProgramGalleryImage[];
+  addAction: (formData: FormData) => Promise<void>;
+  deleteAction: (imageId: string, storagePath: string) => Promise<void>;
+}) {
+  const router = useRouter();
+  const { showToast } = useAdminToast();
+  const [isPending, startTransition] = useTransition();
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [newFiles, setNewFiles] = useState<{ file: File; preview: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const remainingSlots = MAX_PROGRAM_GALLERY_IMAGES - existingImages.length - newFiles.length;
+
+  const handleFiles = async (fileList: FileList | null) => {
+    if (!fileList || remainingSlots <= 0) return;
+    const incoming = Array.from(fileList).slice(0, remainingSlots);
+
+    setIsCompressing(true);
+    try {
+      const compressed = await Promise.all(incoming.map((file) => compressImage(file)));
+      setNewFiles((prev) => [
+        ...prev,
+        ...compressed.map((file) => ({ file, preview: URL.createObjectURL(file) })),
+      ]);
+    } finally {
+      setIsCompressing(false);
+    }
+  };
+
+  const removeNewFile = (index: number) => {
+    setNewFiles((prev) => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const handleRemoveExisting = (img: ProgramGalleryImage) => {
+    startTransition(async () => {
+      try {
+        await deleteAction(img.id, img.storage_path);
+        router.refresh();
+        showToast("Gallery image removed", "success");
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to remove image", "error");
+      }
+    });
+  };
+
+  const handleUpload = () => {
+    if (newFiles.length === 0) return;
+    const formData = new FormData();
+    newFiles.forEach(({ file }) => formData.append("gallery", file));
+
+    startTransition(async () => {
+      try {
+        await addAction(formData);
+        router.refresh();
+        showToast(`${newFiles.length} image${newFiles.length > 1 ? "s" : ""} added`, "success");
+        newFiles.forEach((f) => URL.revokeObjectURL(f.preview));
+        setNewFiles([]);
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to upload images", "error");
+      }
+    });
+  };
+
+  return (
+    <div className="col-span-2 border-t border-ink/10 pt-4 sm:col-span-12">
+      <div className="flex items-center justify-between">
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-ink">Gallery</h4>
+        <span className="text-[11px] text-charcoal/40">
+          {existingImages.length + newFiles.length}/{MAX_PROGRAM_GALLERY_IMAGES}
+        </span>
+      </div>
+      <p className="mt-1 text-[11px] text-charcoal/40">
+        Extra photos shown as carousel slides when this card is featured.
+      </p>
+
+      <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
+        {existingImages.map((img) => (
+          <div
+            key={img.id}
+            className="group relative aspect-square overflow-hidden border border-ink/10"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={img.image_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+            <button
+              type="button"
+              onClick={() => handleRemoveExisting(img)}
+              disabled={isPending}
+              title="Remove"
+              className="absolute inset-0 flex items-center justify-center bg-ink/60 opacity-0 transition-opacity group-hover:opacity-100 disabled:cursor-not-allowed"
+            >
+              <Trash2 size={13} className="text-parchment" />
+            </button>
+          </div>
+        ))}
+
+        {newFiles.map((f, i) => (
+          <div
+            key={f.preview}
+            className="group relative aspect-square overflow-hidden border border-brass/50"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={f.preview} alt="" className="h-full w-full object-cover" />
+            <button
+              type="button"
+              onClick={() => removeNewFile(i)}
+              title="Remove"
+              className="absolute inset-0 flex items-center justify-center bg-ink/60 opacity-0 transition-opacity group-hover:opacity-100"
+            >
+              <Trash2 size={13} className="text-parchment" />
+            </button>
+          </div>
+        ))}
+
+        {remainingSlots > 0 && (
+          <label
+            className={`flex aspect-square flex-col items-center justify-center gap-1 border border-dashed border-ink/20 text-charcoal/40 transition-colors ${
+              isCompressing ? "cursor-wait opacity-60" : "cursor-pointer hover:border-brass/50"
+            }`}
+          >
+            <ImagePlus size={16} />
+            <span className="text-[9px]">{isCompressing ? "…" : "Add"}</span>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={isCompressing}
+              className="sr-only"
+              onChange={(e) => handleFiles(e.target.files)}
+            />
+          </label>
+        )}
+      </div>
+
+      {newFiles.length > 0 && (
+        <AdminButton
+          type="button"
+          disabled={isPending || isCompressing}
+          onClick={handleUpload}
+          className="mt-3 gap-2 px-3 py-1.5 text-xs"
+        >
+          {isPending && <Loader2 size={13} className="animate-spin" />}
+          Upload {newFiles.length} image{newFiles.length > 1 ? "s" : ""}
+        </AdminButton>
+      )}
+    </div>
+  );
+}
+
 export default function HomepageProgramCard({
   item,
   isFirst,
@@ -32,6 +193,9 @@ export default function HomepageProgramCard({
   moveUpAction,
   moveDownAction,
   toggleFeaturedAction,
+  galleryImages,
+  addGalleryAction,
+  deleteGalleryImageAction,
 }: {
   item: HomepageProgram;
   isFirst: boolean;
@@ -43,6 +207,9 @@ export default function HomepageProgramCard({
   moveUpAction: () => Promise<void>;
   moveDownAction: () => Promise<void>;
   toggleFeaturedAction: () => Promise<void>;
+  galleryImages: ProgramGalleryImage[];
+  addGalleryAction: (formData: FormData) => Promise<void>;
+  deleteGalleryImageAction: (imageId: string, storagePath: string) => Promise<void>;
 }) {
   const router = useRouter();
   const [preview, setPreview] = useState<string | null>(item.image_url);
@@ -293,7 +460,7 @@ export default function HomepageProgramCard({
               disabled={togglingFeatured}
               onClick={handleToggleFeatured}
               className="gap-2 px-3 py-1.5 text-xs"
-              title={item.is_featured ? "Unfeature this card" : "Feature this card — shows first on the homepage"}
+              title={item.is_featured ? "Unfeature this card" : "Feature this card — shows as the big carousel"}
             >
               {togglingFeatured ? (
                 <Loader2 size={13} className="animate-spin" />
@@ -306,7 +473,7 @@ export default function HomepageProgramCard({
 
           <ConfirmModal
             title={`Delete ${item.code} card?`}
-            description="This removes the card and its image from the homepage entirely. This can't be undone."
+            description="This removes the card, its image, and its gallery photos from the homepage entirely. This can't be undone."
             confirmLabel="Delete"
             variant="danger"
             onConfirm={handleDelete}
@@ -323,6 +490,12 @@ export default function HomepageProgramCard({
           />
         </div>
       </form>
+
+      <GallerySection
+        existingImages={galleryImages}
+        addAction={addGalleryAction}
+        deleteAction={deleteGalleryImageAction}
+      />
     </AdminCard>
   );
 }

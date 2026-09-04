@@ -147,7 +147,10 @@ export async function sendVisitorMessage(
 
   await supabase
     .from("chat_conversations")
-    .update({ last_message_at: new Date().toISOString() })
+    .update({ 
+      last_message_at: new Date().toISOString(),
+      unread_count: supabase.rpc("increment", { x: 1 }) 
+    })
     .eq("id", conversationId);
 
   return { ok: true };
@@ -176,7 +179,10 @@ export async function sendAdminReply(
 
   await supabase
     .from("chat_conversations")
-    .update({ last_message_at: new Date().toISOString() })
+    .update({ 
+      last_message_at: new Date().toISOString(),
+      unread_count: 0
+    })
     .eq("id", conversationId);
 
   revalidatePath("/admin/live-chat");

@@ -2,23 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin, sanitizeError } from "@/lib/admin-auth";
-import { verifyCsrfToken, getCsrfTokenFromHeaders } from "@/lib/csrf";
+import { MAX_PROGRAM_GALLERY_IMAGES } from "@/lib/homepage-gallery";
 
 function randomFileName(originalName: string) {
   const ext = originalName.includes(".") ? originalName.split(".").pop() : "jpg";
   return `${crypto.randomUUID()}.${ext}`;
 }
 
-async function verifyCsrf(formData: FormData, headersList: Headers): Promise<boolean> {
-  const token = await getCsrfTokenFromHeaders(headersList) ?? formData.get("csrf_token")?.toString() ?? null;
-  return verifyCsrfToken(token);
-}
-
 export async function createHomepageProgram(formData: FormData) {
-  const headers = new Headers();
-  const csrfValid = await verifyCsrf(formData, headers);
-  if (!csrfValid) throw new Error("Invalid request. Please refresh and try again.");
-
   const { supabase } = await requireAdmin();
 
   const code = (formData.get("code") as string)?.trim();
@@ -77,10 +68,6 @@ export async function createHomepageProgram(formData: FormData) {
 }
 
 export async function updateHomepageProgram(id: string, formData: FormData) {
-  const headers = new Headers();
-  const csrfValid = await verifyCsrf(formData, headers);
-  if (!csrfValid) throw new Error("Invalid request. Please refresh and try again.");
-
   const { supabase } = await requireAdmin();
 
   const code = (formData.get("code") as string)?.trim();
@@ -110,10 +97,6 @@ export async function updateHomepageProgram(id: string, formData: FormData) {
 }
 
 export async function updateHomepageProgramImage(id: string, formData: FormData) {
-  const headers = new Headers();
-  const csrfValid = await verifyCsrf(formData, headers);
-  if (!csrfValid) throw new Error("Invalid request. Please refresh and try again.");
-
   const { supabase } = await requireAdmin();
 
   const file = formData.get("image") as File | null;
@@ -132,7 +115,7 @@ export async function updateHomepageProgramImage(id: string, formData: FormData)
 
   const path = randomFileName(file.name);
   const { error: uploadError } = await supabase.storage.from("program-images").upload(path, file);
-  if (uploadError) throw new Error(sanitizeError(uploadError));
+  if (uploadError) throw new Error(`Storage upload failed: ${sanitizeError(uploadError)}`);
 
   const {
     data: { publicUrl },
@@ -143,7 +126,7 @@ export async function updateHomepageProgramImage(id: string, formData: FormData)
     .update({ image_url: publicUrl, storage_path: path })
     .eq("id", id);
 
-  if (updateError) throw new Error(sanitizeError(updateError));
+  if (updateError) throw new Error(`Database update failed: ${sanitizeError(updateError)}`);
 
   if (existing?.storage_path) {
     await supabase.storage.from("program-images").remove([existing.storage_path]);
@@ -174,10 +157,22 @@ export async function removeHomepageProgramImage(id: string, storagePath: string
 export async function deleteHomepageProgram(id: string, storagePath: string | null) {
   const { supabase } = await requireAdmin();
 
-  if (storagePath) {
-    await supabase.storage.from("program-images").remove([storagePath]);
+  const { data: galleryImages } = await supabase
+    .from("homepage_program_images")
+    .select("storage_path")
+    .eq("program_id", id);
+
+  const pathsToRemove = [
+    ...(storagePath ? [storagePath] : []),
+    ...(galleryImages ?? []).map((g) => g.storage_path),
+  ];
+
+  if (pathsToRemove.length > 0) {
+    await supabase.storage.from("program-images").remove(pathsToRemove);
   }
 
+  // homepage_program_images rows are removed automatically via the FK's
+  // `on delete cascade`.
   const { error } = await supabase.from("homepage_programs").delete().eq("id", id);
   if (error) throw new Error(sanitizeError(error));
 
@@ -243,6 +238,90 @@ export async function moveHomepageProgram(id: string, direction: "up" | "down") 
     .update({ sort_order: current.sort_order })
     .eq("id", swap.id);
   if (e2) throw new Error(sanitizeError(e2));
+
+  revalidatePath("/admin/what-we-offer");
+  revalidatePath("/");
+}
+
+// Uploads gallery files in parallel and inserts one row per successful
+// upload, capped at MAX_PROGRAM_GALLERY_IMAGES total for the program.
+// CSRF is checked the same way as the other mutating actions here.
+export async function addHomepageProgramGalleryImages(programId: string, formData: FormData) {
+  const { supabase } = await requireAdmin();
+
+  const files = formData
+    .getAll("gallery")
+    .filter((f): f is File => f instanceof File && f.size > 0);
+
+  if (files.length === 0) return;
+
+  for (const file of files) {
+    if (file.size > 5 * 1024 * 1024) throw new Error("Each image must be less than 5MB.");
+    if (!file.type.startsWith("image/")) throw new Error("All files must be images.");
+  }
+
+  const { count } = await supabase
+    .from("homepage_program_images")
+    .select("id", { count: "exact", head: true })
+    .eq("program_id", programId);
+
+  const remaining = MAX_PROGRAM_GALLERY_IMAGES - (count ?? 0);
+  if (remaining <= 0) {
+    throw new Error(`This card already has the maximum of ${MAX_PROGRAM_GALLERY_IMAGES} gallery images.`);
+  }
+
+  const startOrder = count ?? 0;
+  const toUpload = files.slice(0, remaining);
+
+  type GalleryRow = {
+    program_id: string;
+    image_url: string;
+    storage_path: string;
+    sort_order: number;
+  };
+  type UploadResult = { row: GalleryRow } | { error: { message: string } };
+
+  const results: UploadResult[] = await Promise.all(
+    toUpload.map(async (file, i): Promise<UploadResult> => {
+      const path = `gallery/${programId}/${randomFileName(file.name)}`;
+      const { error } = await supabase.storage.from("program-images").upload(path, file);
+      if (error) return { error: { message: sanitizeError(error) } };
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("program-images").getPublicUrl(path);
+
+      return {
+        row: {
+          program_id: programId,
+          image_url: publicUrl,
+          storage_path: path,
+          sort_order: startOrder + i,
+        },
+      };
+    })
+  );
+
+  const rows = results.filter((r): r is { row: GalleryRow } => "row" in r).map((r) => r.row);
+
+  if (rows.length > 0) {
+    const { error } = await supabase.from("homepage_program_images").insert(rows);
+    if (error) throw new Error(sanitizeError(error));
+  }
+
+  revalidatePath("/admin/what-we-offer");
+  revalidatePath("/");
+}
+
+export async function deleteHomepageProgramGalleryImage(
+  imageId: string,
+  storagePath: string
+) {
+  const { supabase } = await requireAdmin();
+
+  await supabase.storage.from("program-images").remove([storagePath]);
+  const { error } = await supabase.from("homepage_program_images").delete().eq("id", imageId);
+  if (error) throw new Error(sanitizeError(error));
 
   revalidatePath("/admin/what-we-offer");
   revalidatePath("/");

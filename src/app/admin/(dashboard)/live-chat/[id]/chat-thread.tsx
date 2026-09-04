@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Ban } from "lucide-react";
+import { Send, Ban, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { sendAdminReply, banVisitorFromConversation, closeConversation } from "@/lib/chat/actions";
 import { AdminCard, AdminButton } from "@/components/admin/admin-ui";
+import { useAdminToast } from "@/components/admin/admin-toast";
+import { useAsyncAction } from "@/hooks/useFormAction";
 
 type ChatMessage = {
   id: string;
@@ -31,6 +33,37 @@ export default function ChatThread({
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { showToast } = useAdminToast();
+
+  const { execute: sendReply, pending: sendingReply } = useAsyncAction({
+    action: () => sendAdminReply(conversationId, draft),
+    loadingMessage: "Sending…",
+    successMessage: "Reply sent",
+    errorMessage: "Failed to send reply",
+    onSuccess: () => {
+      setDraft("");
+    },
+  });
+
+  const { execute: banVisitor, pending: banning } = useAsyncAction({
+    action: () => banVisitorFromConversation(conversationId, visitorId),
+    loadingMessage: "Banning…",
+    successMessage: `${visitorName} banned`,
+    errorMessage: "Failed to ban visitor",
+    onSuccess: () => {
+      setStatus("closed");
+    },
+  });
+
+  const { execute: closeChat, pending: closing } = useAsyncAction({
+    action: () => closeConversation(conversationId),
+    loadingMessage: "Closing…",
+    successMessage: "Conversation closed",
+    errorMessage: "Failed to close conversation",
+    onSuccess: () => {
+      setStatus("closed");
+    },
+  });
 
   useEffect(() => {
     const supabase = createClient();
@@ -62,24 +95,22 @@ export default function ChatThread({
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!draft.trim() || sending) return;
+    if (!draft.trim() || sendingReply) return;
     setSending(true);
-    const text = draft;
-    setDraft("");
-    await sendAdminReply(conversationId, text);
+    await sendReply();
     setSending(false);
   }
 
   async function handleBan() {
     if (!confirm(`Ban ${visitorName}? They won't be able to send messages here again.`)) return;
-    await banVisitorFromConversation(conversationId, visitorId);
-    setStatus("closed");
+    await banVisitor();
   }
 
   async function handleClose() {
-    await closeConversation(conversationId);
-    setStatus("closed");
+    await closeChat();
   }
+
+  const isBusy = sending || sendingReply || banning || closing;
 
   return (
     <AdminCard className="flex h-[32rem] flex-col overflow-hidden">
@@ -90,12 +121,25 @@ export default function ChatThread({
         </div>
         <div className="flex gap-2">
           {status === "open" && (
-            <AdminButton variant="secondary" onClick={handleClose} type="button">
-              Close chat
+            <AdminButton
+              variant="secondary"
+              onClick={handleClose}
+              type="button"
+              disabled={isBusy}
+            >
+              {closing && <Loader2 size={14} className="animate-spin mr-1" />}
+              {closing ? "Closing…" : "Close chat"}
             </AdminButton>
           )}
-          <AdminButton variant="danger" onClick={handleBan} type="button">
-            <Ban size={14} /> Ban
+          <AdminButton
+            variant="danger"
+            onClick={handleBan}
+            type="button"
+            disabled={isBusy}
+          >
+            {banning && <Loader2 size={14} className="animate-spin mr-1" />}
+            <Ban size={14} />
+            {banning ? "Banning…" : "Ban"}
           </AdminButton>
         </div>
       </div>
@@ -122,14 +166,16 @@ export default function ChatThread({
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Reply…"
             maxLength={1000}
-            className="flex-1 rounded-md border border-ink/15 px-3 py-2 text-sm outline-none focus:border-brass"
+            disabled={isBusy}
+            className="flex-1 rounded-md border border-ink/15 px-3 py-2 text-sm outline-none focus:border-brass disabled:opacity-50"
           />
           <button
             type="submit"
-            disabled={sending || !draft.trim()}
+            disabled={isBusy || !draft.trim()}
             aria-label="Send"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brass text-ink transition hover:bg-brass/90 disabled:opacity-40"
           >
+            {sendingReply && <Loader2 size={16} className="animate-spin" />}
             <Send size={16} />
           </button>
         </form>

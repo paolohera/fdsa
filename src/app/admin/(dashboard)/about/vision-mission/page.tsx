@@ -3,12 +3,7 @@ import { updateVisionMission } from "./actions";
 import { AdminPageHeader } from "@/components/admin/admin-ui";
 import VisionMissionEntryForm from "./entry-form";
 
-export default async function VisionMissionPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string; saved?: string }>;
-}) {
-  const { error, saved } = await searchParams;
+export default async function VisionMissionPage() {
   const supabase = await createClient();
 
   const { data: entries } = await supabase
@@ -22,18 +17,6 @@ export default async function VisionMissionPage({
         title="Vision & Mission"
         description="Text and photo shown in the Vision & Mission section of the About page."
       />
-
-      {saved && (
-        <p className="mb-4 max-w-2xl rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
-          Saved.
-        </p>
-      )}
-
-      {error && (
-        <p className="mb-4 max-w-2xl rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
-      )}
 
       <div className="space-y-6">
         {entries?.map((entry) => (

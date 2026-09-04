@@ -1,20 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import { AdminButton } from "@/components/admin/admin-ui";
+import { useFormAction } from "@/hooks/useFormAction";
 
 export default function HeroImageForm({
   action,
   currentImageUrl,
 }: {
-  action: (formData: FormData) => void;
+  action: (formData: FormData) => Promise<void>;
   currentImageUrl?: string | null;
 }) {
   const [preview, setPreview] = useState<string | null>(currentImageUrl ?? null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [csrfToken, setCsrfToken] = useState<string>("");
+  const { submit, pending } = useFormAction({
+    action,
+    successMessage: currentImageUrl ? "Hero image updated" : "Hero image uploaded",
+    errorMessage: "Failed to upload image",
+  });
+
+  useEffect(() => {
+    async function fetchCsrfToken() {
+      try {
+        const res = await fetch("/api/csrf");
+        const data = await res.json();
+        setCsrfToken(data.token || "");
+      } catch {
+        // Token fetch failed
+      }
+    }
+    fetchCsrfToken();
+  }, []);
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    if (csrfToken) formData.append("csrf_token", csrfToken);
+    submit(formData);
+  }
 
   return (
-    <form action={action}>
+    <form onSubmit={handleSubmit}>
       <div className="relative aspect-[16/7] w-full overflow-hidden bg-ink/5">
         {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -29,6 +57,11 @@ export default function HeroImageForm({
             </span>
           </div>
         )}
+        {pending && (
+          <div className="absolute inset-0 flex items-center justify-center bg-ink/20">
+            <Loader2 size={28} className="animate-spin text-parchment" />
+          </div>
+        )}
       </div>
 
       <div className="mt-5 flex items-center gap-2">
@@ -41,6 +74,7 @@ export default function HeroImageForm({
             name="image"
             accept="image/*"
             required
+            disabled={pending}
             className="sr-only"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -51,8 +85,9 @@ export default function HeroImageForm({
             }}
           />
         </label>
-        <AdminButton type="submit">
-          {currentImageUrl ? "Replace" : "Upload"}
+        <AdminButton type="submit" disabled={pending}>
+          {pending && <Loader2 size={13} className="animate-spin mr-1" />}
+          {pending ? "Uploading…" : currentImageUrl ? "Replace" : "Upload"}
         </AdminButton>
       </div>
       <p className="mt-2 text-xs text-charcoal/40">

@@ -2,16 +2,18 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ImagePlus, MapPin, Pin, Star, Trash2 } from "lucide-react";
+import { ImagePlus, MapPin, Pin, Star, Trash2, Loader2 } from "lucide-react";
 import { AdminCard, AdminButton, AdminBadge } from "@/components/admin/admin-ui";
 import { deleteGalleryImage } from "./actions";
 import { MAX_GALLERY_IMAGES, type GalleryImage } from "@/lib/news-gallery";
 import { compressImage } from "@/lib/compress-image";
+import { useFormAction } from "@/hooks/useFormAction";
+import { useAdminToast } from "@/components/admin/admin-toast";
 
 type Priority = "normal" | "featured" | "pinned";
 
 type PostFormProps = {
-  action: (formData: FormData) => void;
+  action: (formData: FormData) => Promise<void>;
   postId?: string;
   galleryImages?: GalleryImage[];
   defaultValues?: {
@@ -59,14 +61,20 @@ function GallerySection({
   const [isPending, startTransition] = useTransition();
   const [newFiles, setNewFiles] = useState<{ file: File; preview: string }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { showToast } = useAdminToast();
 
   const remainingSlots = MAX_GALLERY_IMAGES - existingImages.length - newFiles.length;
 
   const handleRemoveExisting = (img: GalleryImage) => {
     if (!postId) return;
     startTransition(async () => {
-      await deleteGalleryImage(img.id, postId, img.storage_path);
-      router.refresh();
+      try {
+        await deleteGalleryImage(img.id, postId, img.storage_path);
+        router.refresh();
+        showToast("Image removed", "success");
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : "Failed to remove image", "error");
+      }
     });
   };
 
@@ -202,6 +210,12 @@ export default function PostForm({
   const [coverCompressing, setCoverCompressing] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
+  const { submit, pending: isSubmitting } = useFormAction({
+    action,
+    successMessage: postId ? "Post updated" : "Post created",
+    errorMessage: "Failed to save post",
+  });
+
   const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -221,8 +235,14 @@ export default function PostForm({
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    await submit(formData);
+  };
+
   return (
-    <form action={action}>
+    <form onSubmit={handleSubmit}>
       {error && (
         <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
@@ -313,8 +333,9 @@ export default function PostForm({
               </span>
             </label>
 
-            <AdminButton type="submit" className="mt-5 w-full justify-center">
-              Save
+            <AdminButton type="submit" disabled={isSubmitting} className="mt-5 w-full justify-center">
+              {isSubmitting && <Loader2 size={14} className="animate-spin mr-1" />}
+              {isSubmitting ? "Saving…" : "Save"}
             </AdminButton>
           </AdminCard>
 
