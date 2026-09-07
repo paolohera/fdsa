@@ -26,6 +26,7 @@ import AdminNotificationBell from "@/components/admin/admin-notification-bell";
 import AdminLogoutButton from "@/components/admin/admin-logout-button";
 import AdminMobileSidebarToggle from "@/components/admin/admin-mobile-sidebar-toggle";
 import { AdminToastProvider } from "@/components/admin/admin-toast";
+import { getUnreadCount } from "@/lib/notifications/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -57,43 +58,8 @@ export default async function AdminLayout({
     redirect("/admin/login?error=Your account does not have admin access yet.");
   }
 
-  const { count: unreadMessages } = await supabase
-    .from("contact_messages")
-    .select("*", { count: "exact", head: true })
-    .eq("read", false);
-
-  const { count: openChats } = await supabase
-    .from("chat_conversations")
-    .select("*", { count: "exact", head: true })
-    .gt("unread_count", 0);
-
-  const { count: newApplications } = await supabase
-    .from("enrollment_submissions")
-    .select("*", { count: "exact", head: true })
-    .eq("status", "new");
-
-  // Preview data for the notification dropdown — a small recent slice of
-  // each unread/open/new item, merged and sorted client-side by time.
-  const { data: recentMessages } = await supabase
-    .from("contact_messages")
-    .select("id, name, message, created_at")
-    .eq("read", false)
-    .order("created_at", { ascending: false })
-    .limit(5);
-
-  const { data: recentChats } = await supabase
-    .from("chat_conversations")
-    .select("id, visitor_name, last_message_at")
-    .gt("unread_count", 0)
-    .order("last_message_at", { ascending: false })
-    .limit(5);
-
-  const { data: recentApplications } = await supabase
-    .from("enrollment_submissions")
-    .select("id, program_name, data, submitted_at")
-    .eq("status", "new")
-    .order("submitted_at", { ascending: false })
-    .limit(5);
+  // Get unread count for sidebar badges (using centralized notifications)
+  const unreadCount = await getUnreadCount();
 
   // Shared sidebar content — rendered both in the fixed desktop rail and
   // inside the mobile slide-out drawer, so nav links, badges, and the
@@ -143,19 +109,19 @@ export default async function AdminLayout({
           href="/admin/messages"
           label="Messages"
           icon={<Mail size={17} strokeWidth={2} />}
-          badge={unreadMessages ?? 0}
+          badge={unreadCount}
         />
         <AdminNavLink
           href="/admin/live-chat"
           label="Live Chat"
           icon={<MessageCircle size={17} strokeWidth={2} />}
-          badge={openChats ?? 0}
+          badge={unreadCount}
         />
         <AdminNavLink
           href="/admin/enrollment"
           label="Enrollment"
           icon={<ClipboardCheck size={17} strokeWidth={2} />}
-          badge={newApplications ?? 0}
+          badge={unreadCount}
           matchNested
         />
       </nav>
@@ -217,14 +183,7 @@ export default async function AdminLayout({
               <AdminTopbarTitle />
               <AdminSearch />
             </div>
-            <AdminNotificationBell
-              initialUnreadMessages={unreadMessages ?? 0}
-              initialOpenChats={openChats ?? 0}
-              initialNewApplications={newApplications ?? 0}
-              initialRecentMessages={recentMessages ?? []}
-              initialRecentChats={recentChats ?? []}
-              initialRecentApplications={recentApplications ?? []}
-            />
+            <AdminNotificationBell />
           </header>
 
           <main className="mt-16 flex-1 px-4 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">

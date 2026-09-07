@@ -133,25 +133,25 @@ export async function sendVisitorMessage(
     return { ok: false, error: "You're sending messages too quickly. This chat has been closed." };
   }
 
-  const { error } = await supabase.from("chat_messages").insert({
+  const { error: insertError } = await supabase.from("chat_messages").insert({
     conversation_id: conversationId,
     sender: "visitor",
     body: text,
   });
 
-  if (error) {
-    // TEMP DEBUG — remove this console.error once the real cause is found.
-    console.error("sendVisitorMessage insert failed:", error);
+  if (insertError) {
+    console.error("sendVisitorMessage insert failed:", insertError);
     return { ok: false, error: "Couldn't send your message. Please try again." };
   }
 
-  await supabase
-    .from("chat_conversations")
-    .update({ 
-      last_message_at: new Date().toISOString(),
-      unread_count: supabase.rpc("increment", { x: 1 }) 
-    })
-    .eq("id", conversationId);
+  const { error: updateError } = await supabase.rpc("increment_unread_count", {
+    conversation_id: conversationId,
+  });
+
+  if (updateError) {
+    console.error("sendVisitorMessage conversation update failed:", updateError);
+    return { ok: false, error: "Couldn't update conversation. Please try again." };
+  }
 
   return { ok: true };
 }
@@ -167,23 +167,47 @@ export async function sendAdminReply(
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from("chat_messages").insert({
+  const { error: insertError } = await supabase.from("chat_messages").insert({
     conversation_id: conversationId,
     sender: "admin",
     body: text,
   });
 
-  if (error) {
-    return { ok: false, error: error.message };
+  if (insertError) {
+    return { ok: false, error: insertError.message };
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("chat_conversations")
-    .update({ 
+    .update({
       last_message_at: new Date().toISOString(),
-      unread_count: 0
+      unread_count: 0,
     })
     .eq("id", conversationId);
+
+  if (updateError) {
+    console.error("sendAdminReply conversation update failed:", updateError);
+    return { ok: false, error: "Couldn't update conversation. Please try again." };
+  }
+
+  revalidatePath("/admin/live-chat");
+  return { ok: true };
+}
+
+export async function markConversationRead(
+  conversationId: string
+): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("chat_conversations")
+    .update({ unread_count: 0 })
+    .eq("id", conversationId);
+
+  if (error) {
+    console.error("markConversationRead failed:", error);
+    return { ok: false, error: "Couldn't mark conversation as read." };
+  }
 
   revalidatePath("/admin/live-chat");
   return { ok: true };
@@ -195,15 +219,25 @@ export async function banVisitorFromConversation(
 ): Promise<ActionResult> {
   const supabase = await createClient();
 
-  await supabase.from("chat_banned_visitors").insert({
+  const { error: banError } = await supabase.from("chat_banned_visitors").insert({
     visitor_id: visitorId,
     reason: "Manually banned by admin",
   });
 
-  await supabase
+  if (banError) {
+    console.error("banVisitorFromConversation insert failed:", banError);
+    return { ok: false, error: "Couldn't ban visitor. Please try again." };
+  }
+
+  const { error: updateError } = await supabase
     .from("chat_conversations")
     .update({ status: "closed" })
     .eq("id", conversationId);
+
+  if (updateError) {
+    console.error("banVisitorFromConversation update failed:", updateError);
+    return { ok: false, error: "Couldn't close conversation. Please try again." };
+  }
 
   revalidatePath("/admin/live-chat");
   return { ok: true };
@@ -212,7 +246,15 @@ export async function banVisitorFromConversation(
 export async function closeConversation(conversationId: string): Promise<ActionResult> {
   const supabase = await createClient();
 
-  await supabase.from("chat_conversations").update({ status: "closed" }).eq("id", conversationId);
+  const { error } = await supabase
+    .from("chat_conversations")
+    .update({ status: "closed" })
+    .eq("id", conversationId);
+
+  if (error) {
+    console.error("closeConversation update failed:", error);
+    return { ok: false, error: "Couldn't close conversation. Please try again." };
+  }
 
   revalidatePath("/admin/live-chat");
   return { ok: true };

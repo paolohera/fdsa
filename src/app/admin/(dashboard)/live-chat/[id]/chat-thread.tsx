@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Send, Ban, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { sendAdminReply, banVisitorFromConversation, closeConversation } from "@/lib/chat/actions";
+import { sendAdminReply, banVisitorFromConversation, closeConversation, markConversationRead } from "@/lib/chat/actions";
+import { markNotificationRead, getNotifications } from "@/lib/notifications/actions";
 import { AdminCard, AdminButton } from "@/components/admin/admin-ui";
 import { useAdminToast } from "@/components/admin/admin-toast";
 import { useAsyncAction } from "@/hooks/useFormAction";
@@ -67,6 +68,19 @@ export default function ChatThread({
 
   useEffect(() => {
     const supabase = createClient();
+
+    // Mark conversation as read when admin opens it
+    markConversationRead(conversationId);
+
+    // Mark related chat notifications as read
+    getNotifications({ unreadOnly: true, limit: 100 }).then((notifs) => {
+      const chatNotifs = notifs.filter(
+        (n) => n.type === "live_chat" && n.reference_id === conversationId
+      );
+      if (chatNotifs.length > 0) {
+        markNotificationRead(chatNotifs[0].id);
+      }
+    });
 
     const channel = supabase
       .channel(`admin-chat-${conversationId}`)
