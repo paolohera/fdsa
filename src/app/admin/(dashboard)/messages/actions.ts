@@ -11,6 +11,16 @@ export async function toggleMessageRead(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("contact_messages").update({ read: nextRead }).eq("id", id);
 
+  // If marking as read, also mark corresponding notification as read
+  if (nextRead) {
+    await supabase
+      .from("notifications")
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .eq("reference_type", "contact_message")
+      .eq("reference_id", id)
+      .eq("is_read", false);
+  }
+
   revalidatePath("/admin/messages");
   revalidatePath("/admin");
 }

@@ -25,10 +25,15 @@ export async function getNotifications(options?: {
   let query = supabase
     .from("notifications")
     .select("id, type, title, message, link, reference_id, reference_type, is_read, created_at, read_at")
+    .eq("is_read", false)
     .order("created_at", { ascending: false });
 
-  if (options?.unreadOnly) {
-    query = query.eq("is_read", false);
+  // Allow override for admin/history views if needed
+  if (options?.unreadOnly === false) {
+    query = supabase
+      .from("notifications")
+      .select("id, type, title, message, link, reference_id, reference_type, is_read, created_at, read_at")
+      .order("created_at", { ascending: false });
   }
 
   if (options?.limit) {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useSidebar } from "@/components/admin/sidebar-context";
 
 type AdminNavLinkProps = {
   href: string;
@@ -20,6 +21,7 @@ type AdminNavLinkProps = {
 
 export default function AdminNavLink({ href, label, icon, badge, matchNested = false }: AdminNavLinkProps) {
   const pathname = usePathname();
+  const { collapsed } = useSidebar();
   const active =
     pathname === href || (matchNested && pathname.startsWith(`${href}/`));
 
@@ -33,7 +35,12 @@ export default function AdminNavLink({ href, label, icon, badge, matchNested = f
       }`}
     >
       <span className={active ? "text-brass" : ""}>{icon}</span>
-      <span className="flex-1">{label}</span>
+      {!collapsed && <span className="flex-1 truncate">{label}</span>}
+      {collapsed && (
+        <span className="absolute left-full ml-3 px-2 py-1 text-xs font-medium text-parchment bg-ink rounded shadow-lg whitespace-nowrap z-10">
+          {label}
+        </span>
+      )}
       {!!badge && badge > 0 && (
         <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-brass px-1.5 text-[11px] font-bold text-ink">
           {badge}

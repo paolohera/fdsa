@@ -53,7 +53,6 @@ export default function AdminNotificationBell() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [filter, setFilter] = useState<"all" | "unread">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,7 +128,7 @@ export default function AdminNotificationBell() {
   async function handleMarkAllRead() {
     try {
       await markAllNotificationsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+      setNotifications([]);
       setUnreadCount(0);
       showToast("All notifications marked as read", "success");
     } catch (err) {
@@ -138,23 +137,15 @@ export default function AdminNotificationBell() {
   }
 
   async function handleNotificationClick(notification: Notification) {
-    if (!notification.is_read) {
-      try {
-        await markNotificationRead(notification.id);
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notification.id ? { ...n, is_read: true } : n))
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-      } catch (err) {
-        showToast(err instanceof Error ? err.message : "Failed to mark as read", "error");
-      }
+    try {
+      await markNotificationRead(notification.id);
+      setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Failed to mark as read", "error");
     }
     setOpen(false);
   }
-
-  const filteredNotifications = filter === "unread"
-    ? notifications.filter((n) => !n.is_read)
-    : notifications;
 
   // Compute today/yesterday strings once per render using useMemo
   const { todayStr, yesterdayStr } = useMemo(() => {
@@ -164,7 +155,7 @@ export default function AdminNotificationBell() {
     return { todayStr: today, yesterdayStr: yesterday };
   }, []);
 
-  const groupedNotifications = filteredNotifications.reduce(
+  const groupedNotifications = notifications.reduce(
     (acc, n) => {
       const date = new Date(n.created_at).toDateString();
       const label = date === todayStr ? "Today" : date === yesterdayStr ? "Yesterday" : date;
@@ -196,32 +187,6 @@ export default function AdminNotificationBell() {
         <div className="absolute right-0 top-full z-50 mt-2 w-[28rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-ink/10 bg-paper shadow-xl">
           <div className="flex items-center justify-between border-b border-ink/10 px-4 py-3">
             <h3 className="text-sm font-semibold text-ink">Notifications</h3>
-            <div className="flex items-center gap-2">
-              <div className="flex bg-ink/5 rounded-full p-0.5" role="radiogroup" aria-label="Filter notifications">
-                <button
-                  type="button"
-                  onClick={() => setFilter("all")}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition ${
-                    filter === "all"
-                      ? "bg-brass text-ink"
-                      : "text-charcoal/60 hover:text-ink"
-                  }`}
-                >
-                  All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFilter("unread")}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition ${
-                    filter === "unread"
-                      ? "bg-brass text-ink"
-                      : "text-charcoal/60 hover:text-ink"
-                  }`}
-                >
-                  Unread
-                </button>
-              </div>
-            </div>
           </div>
 
           <div className="max-h-[500px] overflow-y-auto">
@@ -239,11 +204,9 @@ export default function AdminNotificationBell() {
                   Retry
                 </button>
               </div>
-            ) : filteredNotifications.length === 0 ? (
+            ) : notifications.length === 0 ? (
               <div className="px-4 py-8 text-center text-sm text-charcoal/50">
-                {filter === "unread"
-                  ? "You're all caught up."
-                  : "No notifications yet."}
+                No new notifications.
               </div>
             ) : (
               <>
@@ -259,29 +222,23 @@ export default function AdminNotificationBell() {
                         key={notification.id}
                         href={notification.link}
                         onClick={() => handleNotificationClick(notification)}
-                        className={`flex items-start gap-3 border-b border-ink/5 px-4 py-3 transition last:border-b-0 ${
-                          notification.is_read
-                            ? "hover:bg-ink/[0.03]"
-                            : "bg-ink/3 hover:bg-ink/5"
-                        }`}
+                        className="flex items-start gap-3 border-b border-ink/5 px-4 py-3 transition last:border-b-0 hover:bg-ink/5"
                       >
                         <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${getNotificationIconBg(notification.type)}`}>
                           {getNotificationIcon(notification.type)}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className={`truncate text-sm ${notification.is_read ? "font-medium" : "font-semibold"} text-ink`}>
+                          <p className="truncate text-sm font-semibold text-ink">
                             {notification.title}
                           </p>
-                          <p className={`truncate text-xs ${notification.is_read ? "text-charcoal/60" : "text-charcoal/70"}`}>
+                          <p className="truncate text-xs text-charcoal/70">
                             {notification.message}
                           </p>
                         </div>
                         <span className="shrink-0 whitespace-nowrap text-[11px] text-charcoal/40">
                           {timeAgo(notification.created_at)}
                         </span>
-                        {!notification.is_read && (
-                          <span className="shrink-0 w-2 h-2 rounded-full bg-brass ml-1 mt-2" aria-label="Unread" />
-                        )}
+                        <span className="shrink-0 w-2 h-2 rounded-full bg-brass ml-1 mt-2" aria-label="Unread" />
                       </Link>
                     ))}
                   </div>
@@ -290,7 +247,7 @@ export default function AdminNotificationBell() {
             )}
           </div>
 
-          {(unreadCount > 0 || filter === "unread") && (
+          {unreadCount > 0 && (
             <div className="border-t border-ink/10 p-3">
               <button
                 type="button"

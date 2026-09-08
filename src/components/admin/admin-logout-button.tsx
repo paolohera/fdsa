@@ -15,9 +15,9 @@ export default function AdminLogoutButton({ logoutAction }: { logoutAction: () =
         <button
           type="button"
           aria-label="Sign out"
-          className="p-1.5 text-parchment/50 transition hover:text-parchment"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-charcoal/60 transition hover:bg-ink/5 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brass focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
         >
-          <LogOut size={17} strokeWidth={2} />
+          <LogOut size={18} strokeWidth={2} />
         </button>
       }
     />

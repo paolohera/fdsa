@@ -80,7 +80,7 @@ export default async function HomePage() {
       <HeroSection imageUrl={heroImage?.image_url} />
 
       {/* About preview */}
-      <section className="border-y border-ink/10 bg-paper">
+      <section className="border-y border-ink/10 bg-paper" aria-labelledby="about-heading">
         <div className="mx-auto grid max-w-5xl gap-12 px-6 py-20 sm:grid-cols-2 sm:items-center sm:gap-16">
           <ScrollReveal x={-60} y={0}>
             <div className="relative">
@@ -94,8 +94,8 @@ export default async function HomePage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={aboutImage.image_url}
-                    alt="FDSA students"
-                    className="h-full w-full object-cover"
+                    alt="FDSA campus at Mactan-Cebu International Airport"
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.02]"
                   />
                 </div>
               ) : (
@@ -110,19 +110,22 @@ export default async function HomePage() {
               )}
 
               {/* Founding-year badge — a stamped ID-tag treatment echoing the
-                  brass/ink crest elsewhere on the site. */}
+                  brass/ink crest elsewhere on the site. Now a meaningful story anchor. */}
               <div
-                className="absolute -bottom-6 -right-2 flex h-24 w-24 rotate-[-6deg] flex-col items-center justify-center rounded-full border-2 border-brass bg-ink text-center shadow-lg sm:-right-6"
-                aria-hidden="true"
+                className="absolute -bottom-6 -right-2 flex h-28 w-28 rotate-[-6deg] flex-col items-center justify-center rounded-full border-2 border-brass bg-ink text-center shadow-xl sm:-right-6"
+                aria-label="Established 1988 — 36+ years of aviation education"
               >
                 <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-brass">
                   Est.
                 </span>
                 <span
-                  className="text-xl leading-none text-parchment"
+                  className="text-2xl leading-none text-parchment"
                   style={{ fontFamily: "var(--font-display)" }}
                 >
                   1988
+                </span>
+                <span className="text-[9px] font-medium uppercase tracking-[0.1em] text-brass/70">
+                  Established
                 </span>
               </div>
             </div>
@@ -136,26 +139,37 @@ export default async function HomePage() {
               >
                 About FDSA
               </p>
-              <h3
-                className="mt-2 text-3xl leading-tight text-ink sm:text-4xl"
+              <h3 id="about-heading"
+                className="mt-2 text-4xl leading-tight text-ink sm:text-5xl"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Training aviation professionals since 1988.
+                An aviation legacy
+                <br />
+                <span className="text-brass">that began in 1988.</span>
               </h3>
-              <p className="mt-4 text-sm leading-7 text-charcoal/80">
-                From a single hangar in Manila to a full campus at Mactan-Cebu
-                International Airport, FDSA has spent over three decades
-                preparing students for careers in aircraft maintenance,
-                avionics, and aviation business — guided by faith, duty,
-                service, and accountability.
+              <p className="mt-5 text-sm leading-8 text-charcoal/80">
+                Before today&apos;s aviation professionals stepped into the industry,
+                many first stepped into a classroom, a hangar, or a training environment
+                where their journey began.
+              </p>
+              <p className="mt-4 text-sm leading-8 text-charcoal/80">
+                Founded in 1988, FDSA began with a vision to prepare Filipinos for
+                meaningful careers in aviation. From its early beginnings in Manila
+                to its campus at Mactan-Cebu International Airport, that mission has
+                continued to evolve with the industry.
+              </p>
+              <p className="mt-4 text-sm leading-8 text-charcoal/80">
+                Today, FDSA brings together education, discipline, technical training,
+                and an understanding of the aviation environment to help students take
+                their first confident steps toward the industry.
               </p>
 
               <Link
                 href="/about"
-                className="group mt-7 inline-flex items-center gap-2 border border-ink px-6 py-3 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment"
+                className="group mt-8 inline-flex items-center gap-2 border border-ink px-6 py-3.5 text-sm font-medium text-ink transition hover:bg-ink hover:text-parchment"
               >
-                More About Us
-                <span className="transition-transform group-hover:translate-x-1">→</span>
+                Discover Our Story
+                <span className="transition-transform group-hover:translate-x-1" aria-hidden="true">→</span>
               </Link>
             </div>
           </ScrollReveal>

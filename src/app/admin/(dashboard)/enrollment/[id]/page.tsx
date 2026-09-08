@@ -25,6 +25,14 @@ export default async function EnrollmentDetailPage({
 
   if (!submission) notFound();
 
+  // Mark corresponding notification as read when viewing enrollment
+  await supabase
+    .from("notifications")
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq("reference_type", "enrollment_submission")
+    .eq("reference_id", id)
+    .eq("is_read", false);
+
   const { data: fields } = await supabase
     .from("enrollment_fields")
     .select("field_key, label")
