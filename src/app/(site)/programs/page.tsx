@@ -77,7 +77,7 @@ export default async function ProgramsPage() {
         </ScrollReveal>
       </section>
 
-      <section className="mx-auto max-w-5xl px-6 py-16">
+      <section className="mx-auto max-w-6xl px-6 py-16">
         <ScrollReveal>
           <p className="mb-8 text-center text-sm text-charcoal/60">
             Hover to preview, click to explore a program.

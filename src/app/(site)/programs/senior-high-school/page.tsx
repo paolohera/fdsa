@@ -5,7 +5,7 @@ import { shsPrograms, shsRequirements } from "@/lib/program-data";
 export const metadata: Metadata = {
   title: "Senior High School",
   description:
-    "DepEd-recognized Senior High School strands at FDSA: STEM, ABM, and GAS — Grades 11 and 12.",
+    "DepEd-recognized Senior High School strands at FDSA: STEM and BE — Grades 11 and 12.",
   alternates: { canonical: "/programs/senior-high-school" },
 };
 
@@ -14,7 +14,7 @@ export default function SeniorHighSchoolPage() {
     <ProgramTrackPage
       eyebrow="Approved by DepEd — Department of Education"
       title="Senior High School"
-      intro="Academic strands for Grades 11–12, building the foundation for aviation, business, and general college pathways."
+      intro="Academic strands for Grades 11–12, building the foundation for aviation and business pathways."
       programs={shsPrograms}
       requirementGroups={[{ label: "Grade 11 Admission", items: shsRequirements }]}
       trackSlug="senior-high-school"

@@ -121,32 +121,18 @@ export const shsPrograms: Program[] = [
     ],
   },
   {
-    code: "ABM",
-    name: "Accountancy, Business, and Management",
+    code: "BE",
+    name: "Business and Entrepreneurship",
     duration: "2 years (Grades 11–12)",
     description:
-      "Prepares students for careers and further study in business, accounting, and finance.",
+      "Prepares students for careers and further study in business, entrepreneurship, and management.",
     curriculum: [
-      "TODO: add ABM subject list per DepEd SHS curriculum",
+      "TODO: add BE subject list per DepEd SHS curriculum",
     ],
     outcomes: [
-      "Business & accountancy degree programs",
+      "Business & entrepreneurship degree programs",
       "Aviation business & operations tracks",
       "Entrepreneurship pathways",
-    ],
-  },
-  {
-    code: "GAS",
-    name: "General Academic Strand",
-    duration: "2 years (Grades 11–12)",
-    description:
-      "A flexible track for students still exploring their future academic and career direction.",
-    curriculum: [
-      "TODO: add GAS subject list per DepEd SHS curriculum",
-    ],
-    outcomes: [
-      "Flexible entry into any college degree program",
-      "General education foundation",
     ],
   },
 ];

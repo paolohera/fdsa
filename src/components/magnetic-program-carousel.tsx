@@ -10,12 +10,12 @@ type ProgramItem = {
 };
 
 const DEFAULTS = {
-  collapsedWidth: 90,
-  hoverWidth: 190,
-  collapsedHeight: 340,
-  hoverHeight: 400,
-  gap: 12,
-  influence: 220,
+  collapsedWidth: 108,  
+  hoverWidth: 228,      
+  collapsedHeight: 408,
+  hoverHeight: 480,    
+  gap: 14,              
+  influence: 264,      
 };
 
 // Lerp factor per animation frame — matches the original Originkit component
